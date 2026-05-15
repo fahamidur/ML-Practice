@@ -1,0 +1,2410 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"><script type="text/javascript">
+    (function() {
+      var container = document.querySelector('#_tcx-zq282al2gz');
+      if (!container) {
+        return;
+      }
+
+      function addToContainer(url, text) {
+        const wrapper = document.createElement('div');
+        wrapper.setAttribute('data-tcx-url', url);
+        wrapper.innerText = text;
+        container.appendChild(wrapper);
+      }
+
+      const fetch = window.fetch
+      window.fetch = function() {
+        return Promise.resolve(fetch.apply(window, arguments))
+            .then(async response => {
+              if (response.ok) {
+                try {
+                  const clone = response.clone();
+                  const json = await clone.json();
+                  addToContainer(clone.url, JSON.stringify(json));
+                } catch (err) {}
+              }
+              return response;
+            });
+      };
+
+      var XHR = XMLHttpRequest.prototype;
+      var send = XHR.send;
+      var open = XHR.open;
+      XHR.open = function(method, url) {
+        this.url = url;
+        return open.apply(this, arguments);
+      };
+      XHR.send = function() {
+        this.addEventListener('load', function() {
+          try {
+            const response = this.response;
+            if (response && response.length) {
+              const firstChar = response[0];
+              if (firstChar === '[' || firstChar === '{') {
+                addToContainer(this.url, response);
+              }
+            }
+          } catch (err) {
+            // No-op.
+          }
+        });
+        return send.apply(this, arguments);
+      };
+    })();
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Engineering Roadmap Command Centre</title>
+  <style>
+    :root {
+      --bg: #06111f;
+      --bg-2: #0b1730;
+      --panel: rgba(12, 22, 43, 0.94);
+      --panel-soft: rgba(255,255,255,0.04);
+      --text: #eef4ff;
+      --muted: #a8b4d1;
+      --line: rgba(255,255,255,0.1);
+      --accent: #7ea7ff;
+      --accent-2: #53dcc8;
+      --gold: #ffd37d;
+      --danger: #ff9e9e;
+      --shadow: 0 18px 40px rgba(0,0,0,0.28);
+      --radius: 22px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(126,167,255,0.18), transparent 28%),
+        radial-gradient(circle at top left, rgba(83,220,200,0.12), transparent 25%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+    .layout { display: grid; grid-template-columns: 310px minmax(0, 1fr); min-height: 100vh; }
+    .sidebar {
+      position: sticky; top: 0; height: 100vh; overflow-y: auto;
+      padding: 22px 18px; border-right: 1px solid var(--line);
+      background: rgba(5, 11, 24, 0.86); backdrop-filter: blur(16px);
+    }
+    .brand, .mini, .card {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+      border-radius: var(--radius); box-shadow: var(--shadow);
+    }
+    .brand { padding: 18px; margin-bottom: 18px; }
+    .brand h1 { margin: 0 0 8px; font-size: 1.16rem; line-height: 1.25; }
+    p, li, span { line-height: 1.6; }
+    p { color: var(--muted); }
+    .muted { color: var(--muted); }
+    .nav { display: grid; gap: 8px; margin-top: 18px; }
+    .nav a { display:block; padding:12px 14px; color: var(--muted); border-radius:14px; border:1px solid transparent; transition:0.18s ease; }
+    .nav a:hover, .nav a.active { color: var(--text); border-color: var(--line); background: rgba(255,255,255,0.05); }
+    .mini { padding: 16px; margin-top: 18px; }
+    .mini h3 { margin: 0 0 8px; font-size: 0.98rem; }
+    .mini ul { margin: 0; padding-left: 18px; color: var(--muted); }
+    .content { padding: 28px; }
+    .hero { display:grid; grid-template-columns: minmax(0,1.5fr) minmax(320px,0.85fr); gap:20px; }
+    .card { padding: 24px; }
+    .section { margin-top: 22px; }
+    .eyebrow {
+      display:inline-flex; align-items:center; gap:8px; padding:8px 10px; border-radius:999px;
+      background: rgba(83,220,200,0.09); border:1px solid rgba(83,220,200,0.22);
+      color: var(--accent-2); font-size: 0.77rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    h2, h3, h4, h5 { margin: 0 0 10px; line-height: 1.24; }
+    .hero h2 { font-size: clamp(1.85rem, 3vw, 2.9rem); max-width: 13ch; }
+    .stats, .grid-2, .grid-3, .today-grid, .resource-grid, .project-grid, .routine-grid, .today-actions { display:grid; gap:16px; }
+    .stats { grid-template-columns: repeat(4,minmax(0,1fr)); margin-top: 18px; }
+    .grid-2 { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    .grid-3 { grid-template-columns: repeat(3,minmax(0,1fr)); }
+    .today-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    .today-actions { grid-template-columns: 1.15fr 0.85fr; }
+    .resource-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    .project-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+    .routine-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    .stat, .panel { border:1px solid var(--line); background: rgba(255,255,255,0.04); border-radius: 18px; padding: 18px; }
+    .stat strong { display:block; font-size:1.34rem; margin-bottom:4px; }
+    .toolbar, .search-row, .pill-row, .summary-meta, .stack, .week-tags { display:flex; flex-wrap:wrap; gap:10px; }
+    button, input, select, textarea { font: inherit; }
+    .btn, .input, .select, .notes {
+      border-radius: 14px; border: 1px solid var(--line); background: rgba(255,255,255,0.05); color: var(--text); padding: 11px 14px;
+    }
+    .btn { cursor:pointer; transition:0.18s ease; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn.primary { background: linear-gradient(135deg, rgba(126,167,255,0.28), rgba(83,220,200,0.18)); border-color: rgba(126,167,255,0.38); }
+    .btn.warn { background: rgba(255,211,125,0.11); color:#ffe9b7; }
+    .btn.danger { background: rgba(255,158,158,0.11); color:#ffd0d0; }
+    .btn.ghost { background: rgba(255,255,255,0.03); }
+    .pill, .tag, .badge { display:inline-flex; align-items:center; gap:8px; padding:7px 12px; border-radius:999px; border:1px solid var(--line); background: rgba(255,255,255,0.04); color: var(--muted); font-size:0.86rem; }
+    .badge { background: rgba(83,220,200,0.09); border-color: rgba(83,220,200,0.24); color: #bdf7ee; font-weight:600; }
+    .tag.gold { background: rgba(255,211,125,0.10); border-color: rgba(255,211,125,0.22); color: #ffe5b0; }
+    .tag.warn { background: rgba(255,158,158,0.10); border-color: rgba(255,158,158,0.22); color: #ffd0d0; }
+    .section-header { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; margin-bottom:14px; }
+    .section-header p { margin: 0; max-width: 72ch; }
+    .progress-wrap { margin-top: 16px; }
+    .progress-row { display:flex; justify-content:space-between; gap:12px; margin-bottom:8px; }
+    .progress-bar { height: 12px; border-radius:999px; overflow:hidden; border:1px solid var(--line); background: rgba(255,255,255,0.07); }
+    .progress-bar > span { display:block; height:100%; width:0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width 0.35s ease; }
+    ul { padding-left: 18px; color: var(--muted); }
+    .checklist { display:grid; gap:10px; }
+    .check-item { display:flex; gap:12px; align-items:flex-start; padding:12px 14px; border-radius:14px; border:1px solid var(--line); background: rgba(255,255,255,0.04); }
+    .check-item input[type="checkbox"] { margin-top:3px; transform:scale(1.15); accent-color: var(--accent-2); }
+    .week-grid { display:grid; gap:18px; }
+    .phase-block { border-top:1px solid var(--line); padding-top: 18px; margin-top:18px; }
+    .phase-title { display:flex; justify-content:space-between; gap:12px; align-items:center; margin-bottom: 12px; }
+    details.item { padding:0; overflow:hidden; }
+    details summary { list-style:none; cursor:pointer; padding:22px; }
+    details summary::-webkit-details-marker { display:none; }
+    .details-body { padding:0 22px 22px; border-top:1px solid var(--line); }
+    .summary-row { display:flex; justify-content:space-between; align-items:flex-start; gap:14px; }
+    .notes { width:100%; min-height:180px; resize:vertical; line-height:1.58; }
+    .foot { margin-top:28px; padding-top:18px; color: var(--muted); font-size:0.92rem; border-top:1px solid var(--line); }
+    .resource-links { display:flex; flex-wrap:wrap; gap:10px; margin-top: 14px; }
+    .flash { font-size: 0.92rem; color: #c8f8cf; min-height: 1.2rem; }
+    @media (max-width: 1180px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position:relative; height:auto; border-right:none; border-bottom:1px solid var(--line); }
+      .hero, .stats, .grid-2, .grid-3, .today-grid, .resource-grid, .project-grid, .routine-grid, .today-actions { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <h1>AI Engineering Roadmap Command Centre</h1>
+        <p>A stronger edition with direct resource mapping, 
+week-specific actions, and a daily command view that makes the next step
+ obvious.</p>
+      </div>
+
+      <nav class="nav" id="nav">
+        <a href="#today" class="active">Today</a>
+        <a href="#engine">Execution Engine</a>
+        <a href="#roadmap">24-Week Roadmap</a>
+        <a href="#resources">Exact Resource Stack</a>
+        <a href="#projects">Portfolio Projects</a>
+        <a href="#notes">Study Notebook</a>
+      </nav>
+
+      <div class="mini">
+        <h3>Non-Negotiables</h3>
+        <ul>
+          <li>No random tutorial hopping</li>
+          <li>No copy-paste on the first attempt</li>
+          <li>No week is complete without something runnable</li>
+          <li>No claiming understanding without one memory rebuild</li>
+          <li>No bridge work before CMake and PyTorch basics feel stable</li>
+        </ul>
+      </div>
+
+      <div class="mini">
+        <h3>Proof of a Strong Week</h3>
+        <ul>
+          <li>One file rebuilt from memory</li>
+          <li>One hard drill solved and explained</li>
+          <li>One bug chain written down clearly</li>
+          <li>One visible artefact shipped to GitHub</li>
+        </ul>
+      </div>
+
+      <div class="mini">
+        <h3>When Stuck</h3>
+        <ul>
+          <li>Reduce the input size and print more intermediate states</li>
+          <li>Write the shape or ownership story in plain English</li>
+          <li>Rebuild the smallest failing case</li>
+          <li>Only then reopen the reference material</li>
+        </ul>
+      </div>
+    </aside>
+
+    <main class="content">
+      <section class="hero">
+        <div class="card">
+          <div class="eyebrow">Upgraded Command View</div>
+          <h2>Open this file and follow the next concrete move</h2>
+          <p>This version is designed to reduce uncertainty. It shows 
+the current week, the current day mode, the exact study targets for C++ 
+and PyTorch, the build rule for today, the resource stack for the week, 
+and the output that must exist before the session ends.</p>
+          <div class="stats">
+            <div class="stat"><strong>24</strong><span class="muted">Weeks in the main plan</span></div>
+            <div class="stat"><strong>21</strong><span class="muted">Verified core resources</span></div>
+            <div class="stat"><strong>3</strong><span class="muted">Portfolio projects</span></div>
+            <div class="stat"><strong>7</strong><span class="muted">Fixed day modes</span></div>
+          </div>
+          <div class="toolbar" style="margin-top:18px;">
+            <input class="input" type="date" id="startDate" value="2026-04-10">
+            <button class="btn primary" id="saveStartDate">Save start date</button>
+            <button class="btn ghost" id="jumpTodayBtn">Jump to today</button>
+            <button class="btn ghost" id="copyTodayBtn">Copy today brief</button>
+            <button class="btn danger" id="resetProgressBtn">Reset progress</button>
+          </div>
+          <div class="pill-row" style="margin-top:14px;">
+            <span class="pill" id="startDateStatus">Start date · 2026-04-10</span>
+            <span class="pill" id="weekStatus">Week 1 of 24</span>
+            <span class="pill" id="dayStatus">Monday · Learn and start building</span>
+          </div>
+          <div class="flash" id="flashMessage"></div>
+        </div>
+
+        <div class="card">
+          <div class="eyebrow">Progress</div>
+          <h3>Study score and shipping discipline</h3>
+          <p>The score is deliberately simple. It tracks whether the 
+weekly work is being turned into visible outputs. The goal is not 
+perfect completion. The goal is keeping the system alive and honest.</p>
+          <div class="progress-wrap">
+            <div class="progress-row"><strong>Overall completion</strong><span id="overallPct" class="muted">0%</span></div>
+            <div class="progress-bar"><span id="overallBar" style="width: 0%;"></span></div>
+          </div>
+          <div class="panel" style="margin-top:16px;">
+            <h4>Session rule</h4>
+            <p>Every study day should end with one of these outcomes.</p>
+            <ul>
+              <li>a new runnable file</li>
+              <li>a cleaner rebuild from memory</li>
+              <li>a test or validation check</li>
+              <li>a short technical note that explains a bug or design choice</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="today" class="section card">
+        <div class="section-header">
+          <div>
+            <div class="eyebrow">Today</div>
+            <h3>Daily command centre</h3>
+            <p>The dashboard below combines the current week target with
+ the current day mode. This is the fastest way to know what should be 
+read, coded, checked, and shipped today.</p>
+          </div>
+          <span class="badge" id="todayHeadline">Week 1 · Monday · Learn and start building</span>
+        </div>
+
+        <div class="today-actions">
+          <div class="panel">
+            <h4 id="todayWeekTitle">Week 1 · Environment, syntax, tensors, and zero-friction setup</h4>
+            <p id="todayWeekSummary">Four tiny C++ files plus one tensor_lab.py script committed with notes.</p>
+            <div class="week-tags" id="todayWeekTags">
+        <span class="tag">Phase 1 · Core Setup and First Fluency</span>
+        <span class="tag gold">4 C++ drills</span>
+        <span class="tag gold">4 PyTorch drills</span>
+      </div>
+            <div class="resource-links" id="todayResourceLinks"><a class="btn ghost" href="https://www.learncpp.com/cpp-tutorial/introduction-to-these-tutorials/" target="_blank" rel="noreferrer">LearnCpp Introduction</a><a class="btn ghost" href="https://www.learncpp.com/" target="_blank" rel="noreferrer">LearnCpp Main Tutorial</a><a class="btn ghost" href="https://exercism.org/tracks/cpp" target="_blank" rel="noreferrer">Exercism C++ Track</a><a class="btn ghost" href="https://docs.pytorch.org/tutorials/beginner/basics/intro.html" target="_blank" rel="noreferrer">PyTorch Learn the Basics</a><a class="btn ghost" href="https://docs.pytorch.org/tutorials/beginner/basics/quickstart_tutorial.html" target="_blank" rel="noreferrer">PyTorch Quickstart</a><a class="btn ghost" href="https://docs.pytorch.org/tutorials/beginner/basics/tensorqs_tutorial.html" target="_blank" rel="noreferrer">PyTorch Tensors</a></div>
+          </div>
+          <div class="panel">
+            <h4 id="todayModeTitle">Monday · Learn and start building</h4>
+            <p id="todayModeGoal">New concept intake plus the first working version.</p>
+            <ul id="todayModeRules">
+        <li><strong>Reading rule</strong> Read the week’s main C++ and 
+PyTorch resources in short focused blocks. Stop reading as soon as the 
+first implementation can start.</li>
+        <li><strong>Build rule</strong> Write the first runnable version immediately, even if it is rough.</li>
+        <li><strong>Output rule</strong> One fresh file must run before the session ends.</li>
+      </ul>
+          </div>
+        </div>
+
+        <div class="today-grid" style="margin-top:16px;">
+          <div class="panel">
+            <h4>C++ mission</h4>
+            <p id="todayCppFocus">Compiler setup, console programs, variables, arithmetic, and input-output without hesitation.</p>
+            <ul id="todayCppTasks"><li>Read this week’s C++ path. Read 
+the LearnCpp introduction first, then begin the early basics sequence on
+ compiling, running, variables, and simple expressions.</li><li>Solve at least one drill from this set. hello name program, temperature converter</li><li>Keep the day-mode rule in force. Write the first runnable version immediately, even if it is rough.</li></ul>
+          </div>
+          <div class="panel">
+            <h4>PyTorch mission</h4>
+            <p id="todayTorchFocus">See the whole PyTorch beginner workflow, then practise tensor creation and shape inspection.</p>
+            <ul id="todayTorchTasks"><li>Read this week’s PyTorch path. Read PyTorch Learn the Basics, Quickstart, and Tensors in that order.</li><li>Implement at least one active drill. tensor creation lab, indexing and slicing</li><li>End by checking shapes, outputs, or checkpoints rather than trusting the script blindly.</li></ul>
+          </div>
+          <div class="panel">
+            <h4>Build and shipping rule</h4>
+            <p id="todayBuildFocus">Create one clean repo with cpp, torch, notes, and screenshots folders.</p>
+            <ul id="todayBuildTasks"><li>Create one clean repo with cpp, torch, notes, and screenshots folders.</li><li>Week shipping rule. Four tiny C++ files plus one tensor_lab.py script committed with notes.</li><li>Today output rule. One fresh file must run before the session ends.</li></ul>
+          </div>
+          <div class="panel">
+            <h4>Today checklist</h4>
+            <div class="checklist" id="todayChecklist"><label class="check-item">
+          <input type="checkbox" data-key="w1-d0-i0">
+          <span><strong>Read only the required material</strong><span class="muted">Read
+ the week’s main C++ and PyTorch resources in short focused blocks. Stop
+ reading as soon as the first implementation can start.</span></span>
+        </label><label class="check-item">
+          <input type="checkbox" data-key="w1-d0-i1">
+          <span><strong>Build the week-specific C++ and PyTorch work</strong><span class="muted">C+
++ target: Compiler setup, console programs, variables, arithmetic, and 
+input-output without hesitation. PyTorch target: See the whole PyTorch 
+beginner workflow, then practise tensor creation and shape inspection.</span></span>
+        </label><label class="check-item">
+          <input type="checkbox" data-key="w1-d0-i2">
+          <span><strong>Apply the day mode build rule</strong><span class="muted">Write the first runnable version immediately, even if it is rough.</span></span>
+        </label><label class="check-item">
+          <input type="checkbox" data-key="w1-d0-i3">
+          <span><strong>Finish with a visible artefact</strong><span class="muted">One fresh file must run before the session ends.</span></span>
+        </label></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="engine" class="section card">
+        <div class="section-header">
+          <div>
+            <div class="eyebrow">Execution Engine</div>
+            <h3>Fixed day modes</h3>
+            <p>The learning system is stronger when the day itself has a
+ clear job. The content changes by week, but the daily intent remains 
+stable so execution does not depend on mood.</p>
+          </div>
+        </div>
+        <div class="routine-grid" id="routineGrid">
+        <div class="panel">
+          <div class="summary-row">
+            <h4>Monday · Learn and start building</h4>
+            <span class="tag gold">110 to 150 minutes</span>
+          </div>
+          <p><strong>Purpose</strong><br>New concept intake plus the first working version.</p>
+          <p><strong>Reading Rule</strong><br>Read the week’s main C++ 
+and PyTorch resources in short focused blocks. Stop reading as soon as 
+the first implementation can start.</p>
+          <p><strong>Build Rule</strong><br>Write the first runnable version immediately, even if it is rough.</p>
+          <p><strong>Expected Output</strong><br>One fresh file must run before the session ends.</p>
+        </div>
+      
+        <div class="panel">
+          <div class="summary-row">
+            <h4>Tuesday · Rebuild from memory</h4>
+            <span class="tag gold">100 to 140 minutes</span>
+          </div>
+          <p><strong>Purpose</strong><br>Force recall so the learner sees what is actually understood.</p>
+          <p><strong>Reading Rule</strong><br>Use notes only after the first recall attempt fails.</p>
+          <p><strong>Build Rule</strong><br>Recreate one C++ file and one PyTorch file without copying.</p>
+          <p><strong>Expected Output</strong><br>A memory-built version with comments on what was forgotten.</p>
+        </div>
+      
+        <div class="panel">
+          <div class="summary-row">
+            <h4>Wednesday · Hard drill and debugging</h4>
+            <span class="tag gold">100 to 150 minutes</span>
+          </div>
+          <p><strong>Purpose</strong><br>Take the week’s hardest drill and explain every breakage clearly.</p>
+          <p><strong>Reading Rule</strong><br>Read only enough to unblock the next mistake.</p>
+          <p><strong>Build Rule</strong><br>Push through one difficult drill and log the bug-fix chain.</p>
+          <p><strong>Expected Output</strong><br>One solved hard drill plus one debugging note.</p>
+        </div>
+      
+        <div class="panel">
+          <div class="summary-row">
+            <h4>Thursday · Mini build day</h4>
+            <span class="tag gold">110 to 160 minutes</span>
+          </div>
+          <p><strong>Purpose</strong><br>Combine the week’s pieces into something slightly larger and cleaner.</p>
+          <p><strong>Reading Rule</strong><br>Use the build-system or project-structure resource if the week needs it.</p>
+          <p><strong>Build Rule</strong><br>Turn loose exercises into one mini project or module.</p>
+          <p><strong>Expected Output</strong><br>A working mini build with a sensible folder layout.</p>
+        </div>
+      
+        <div class="panel">
+          <div class="summary-row">
+            <h4>Friday · Refactor and verify</h4>
+            <span class="tag gold">90 to 140 minutes</span>
+          </div>
+          <p><strong>Purpose</strong><br>Improve names, structure, tests, and reliability.</p>
+          <p><strong>Reading Rule</strong><br>Read the reference docs only for exact fixes or API details.</p>
+          <p><strong>Build Rule</strong><br>Refactor aggressively and add checks, tests, or assertions.</p>
+          <p><strong>Expected Output</strong><br>Cleaner code plus visible verification, tests, reload, or sanity checks.</p>
+        </div>
+      
+        <div class="panel">
+          <div class="summary-row">
+            <h4>Saturday · Package and push</h4>
+            <span class="tag gold">75 to 120 minutes</span>
+          </div>
+          <p><strong>Purpose</strong><br>Turn the week into something that can be shown later.</p>
+          <p><strong>Reading Rule</strong><br>Review notes and README drafts only.</p>
+          <p><strong>Build Rule</strong><br>Organise files, write summary notes, and push to GitHub.</p>
+          <p><strong>Expected Output</strong><br>A clean commit, a short technical summary, and a clear next-week setup.</p>
+        </div>
+      
+        <div class="panel">
+          <div class="summary-row">
+            <h4>Sunday · Light review or rest</h4>
+            <span class="tag gold">20 to 45 minutes</span>
+          </div>
+          <p><strong>Purpose</strong><br>Protect consistency without adding cognitive overload.</p>
+          <p><strong>Reading Rule</strong><br>Read notes, skim one old file, or rest completely.</p>
+          <p><strong>Build Rule</strong><br>No heavy building. Only micro-review if energy is low.</p>
+          <p><strong>Expected Output</strong><br>At most a note update or one tiny review drill.</p>
+        </div>
+      </div>
+      </section>
+
+      <section id="roadmap" class="section card">
+        <div class="section-header">
+          <div>
+            <div class="eyebrow">24-Week Roadmap</div>
+            <h3>Week-by-week prescription</h3>
+            <p>Each week specifies the C++ focus, the PyTorch focus, the
+ main build target, and the resource stack that should carry that week. 
+This is no longer a broad outline. It is a working sequence.</p>
+          </div>
+        </div>
+        <div class="search-row">
+          <input class="input" id="searchWeeks" type="search" placeholder="Search a week, topic, or target">
+          <select class="select" id="phaseFilter"><option value="all" selected="selected">All phases</option><option value="Phase 1 · Core Setup and First Fluency">Phase 1 · Core Setup and First Fluency</option><option value="Phase 2 · Memory, References, and Object Thinking">Phase 2 · Memory, References, and Object Thinking</option><option value="Phase 3 · Standard Library, Build Systems, and Tests">Phase 3 · Standard Library, Build Systems, and Tests</option><option value="Phase 4 · Deep PyTorch Fluency and Reproducibility">Phase 4 · Deep PyTorch Fluency and Reproducibility</option><option value="Phase 5 · Portfolio Build 1 and Portfolio Build 2">Phase 5 · Portfolio Build 1 and Portfolio Build 2</option><option value="Phase 6 · Bridge into AI Engineering">Phase 6 · Bridge into AI Engineering</option></select>
+          <button class="btn ghost" id="expandWeeks">Expand all</button>
+          <button class="btn ghost" id="collapseWeeks">Collapse all</button>
+        </div>
+        <div class="week-grid" id="weekGrid"><div class="phase-block"><div class="phase-title"><h4>Phase 1 · Core Setup and First Fluency</h4><span class="pill">4 weeks</span></div><details class="item card" data-week="1">
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week 1 · Environment, syntax, tensors, and zero-friction setup</h4>
+                  <p>Four tiny C++ files plus one tensor_lab.py script committed with notes.</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>Compiler setup, console programs, variables, arithmetic, and input-output without hesitation.</p>
+                  <p><strong>Read</strong><br>Read the LearnCpp 
+introduction first, then begin the early basics sequence on compiling, 
+running, variables, and simple expressions.</p>
+                  <ul><li>hello name program</li><li>temperature converter</li><li>simple calculator</li><li>unit converter</li></ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>See the whole PyTorch beginner workflow, then practise tensor creation and shape inspection.</p>
+                  <p><strong>Read</strong><br>Read PyTorch Learn the Basics, Quickstart, and Tensors in that order.</p>
+                  <ul><li>tensor creation lab</li><li>indexing and slicing</li><li>broadcasting examples</li><li>device checks</li></ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>Create one clean repo with cpp, torch, notes, and screenshots folders.</p>
+                  <p><strong>Week must end with</strong><br>Four tiny C++ files plus one tensor_lab.py script committed with notes.</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul><li>LearnCpp Introduction</li><li>LearnCpp Main Tutorial</li><li>Exercism C++ Track</li><li>PyTorch Learn the Basics</li><li>PyTorch Quickstart</li><li>PyTorch Tensors</li></ul>
+                </div>
+              </div>
+            </div>
+          </details><details class="item card" data-week="2">
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week 2 · Control flow and manual reasoning</h4>
+                  <p>A control-flow drill pack and a small tensor-only regression script.</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>if, else, switch, while, for, booleans, and branching logic.</p>
+                  <p><strong>Read</strong><br>Continue LearnCpp into the control-flow and Boolean logic lessons, keeping the pace sequential.</p>
+                  <ul><li>FizzBuzz</li><li>prime checker</li><li>factorial calculator</li><li>menu-driven calculator</li></ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>Manual forward-pass reasoning using tensors and tiny regression-style calculations.</p>
+                  <p><strong>Read</strong><br>Revisit Quickstart structure, then use Tensors again to build tiny forward and loss calculations by hand.</p>
+                  <ul><li>manual forward pass</li><li>mean squared error by hand</li><li>batch dimension checks</li></ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>Refactor one old C++ file so logic is split into clean branches and helper functions.</p>
+                  <p><strong>Week must end with</strong><br>A control-flow drill pack and a small tensor-only regression script.</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul><li>LearnCpp Main Tutorial</li><li>Exercism C++ Track</li><li>PyTorch Quickstart</li><li>PyTorch Tensors</li></ul>
+                </div>
+              </div>
+            </div>
+          </details><details class="item card" data-week="3">
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week 3 · Functions, scope, and basic debugging</h4>
+                  <p>One small utility-led C++ project and one torch_metrics.py helper module.</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>Functions, parameters, returns, scope, and separating logic from main.</p>
+                  <p><strong>Read</strong><br>Progress through LearnCpp function lessons and rewrite the earlier week’s code as reusable helpers.</p>
+                  <ul><li>math utilities</li><li>validation functions</li><li>debug broken code</li></ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>Build tiny utility functions for losses, accuracy, and metrics instead of leaving everything inline.</p>
+                  <p><strong>Read</strong><br>Use the Basics sequence as reference, then rewrite utility logic into standalone helper functions.</p>
+                  <ul><li>accuracy helper</li><li>average meter</li><li>mini evaluation function</li></ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>Create a multi-file folder where at least one helper file is separate from the main entry point.</p>
+                  <p><strong>Week must end with</strong><br>One small utility-led C++ project and one torch_metrics.py helper module.</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul><li>LearnCpp Main Tutorial</li><li>Exercism C++ Track</li><li>PyTorch Learn the Basics</li></ul>
+                </div>
+              </div>
+            </div>
+          </details><details class="item card" data-week="4">
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week 4 · Strings, vectors, and data handling basics</h4>
+                  <p>A vector-focused drill file and one batching_playground.py script.</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>std::string, std::vector, iteration, search, and simple statistics.</p>
+                  <p><strong>Read</strong><br>Continue sequentially through LearnCpp string and array-vector material, then use cppreference only for exact STL details.</p>
+                  <ul><li>reverse string</li><li>vowel counter</li><li>mean and median</li><li>remove duplicates</li></ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>Handle lists, simple batching, and dimension sanity checks with tensors.</p>
+                  <p><strong>Read</strong><br>Use Tensors again and create small scripts focused on shape changes and manual batches.</p>
+                  <ul><li>manual batching</li><li>tensor slicing</li><li>stack and cat examples</li></ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>Write one clean program that reads a list, transforms it, and prints a result summary.</p>
+                  <p><strong>Week must end with</strong><br>A vector-focused drill file and one batching_playground.py script.</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul><li>LearnCpp Main Tutorial</li><li>cppreference</li><li>Exercism C++ Track</li><li>PyTorch Tensors</li></ul>
+                </div>
+              </div>
+            </div>
+          </details></div><div class="phase-block"><div class="phase-title"><h4>Phase 2 · Memory, References, and Object Thinking</h4><span class="pill">4 weeks</span></div><details class="item card" data-week="5">
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week 5 · References, pointers, and autograd intuition</h4>
+                  <p>A pointer-reference drill set and one autograd_notes.py script with comments.</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>References, addresses, pointers, pass-by-value, and pass-by-reference.</p>
+                  <p><strong>Read</strong><br>Move through LearnCpp reference and pointer lessons slowly, writing comparison notes after each session.</p>
+                  <ul><li>swap with references</li><li>pointer walk-through array</li><li>parameter-passing comparison</li></ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>Understand autograd, requires_grad, backward, and gradient inspection in very small examples.</p>
+                  <p><strong>Read</strong><br>Read the official autograd tutorial and rebuild each example with printed gradients.</p>
+                  <ul><li>requires_grad examples</li><li>single backward pass</li><li>gradient inspection notes</li></ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>Create a comparison file that shows the same function with value, reference, and pointer styles.</p>
+                  <p><strong>Week must end with</strong><br>A pointer-reference drill set and one autograd_notes.py script with comments.</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul><li>LearnCpp Main Tutorial</li><li>Exercism C++ Track</li><li>PyTorch Autograd</li></ul>
+                </div>
+              </div>
+            </div>
+          </details><details class="item card" data-week="6">
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week 6 · Dynamic memory, nn.Module, and train-step anatomy</h4>
+                  <p>A short safety comparison between manual memory and container-based design plus a working mlp_train.py file.</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>Stack versus heap, dynamic allocation, and why modern code prefers safer ownership patterns.</p>
+                  <p><strong>Read</strong><br>Study dynamic memory in LearnCpp, then write side notes on what feels unsafe or fragile.</p>
+                  <ul><li>dynamic array build</li><li>replace raw array with vector</li><li>memory ownership notes</li></ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>Build a tiny neural network class and a minimal train step with loss and optimiser.</p>
+                  <p><strong>Read</strong><br>Read Build the Neural Network and Optimising Model Parameters back to back.</p>
+                  <ul><li>two-layer MLP</li><li>one train step</li><li>loss logging</li></ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>Write one MLP training script from memory by the end of the week.</p>
+                  <p><strong>Week must end with</strong><br>A short safety comparison between manual memory and container-based design plus a working mlp_train.py file.</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul><li>LearnCpp Main Tutorial</li><li>Build the Neural Network</li><li>Optimising Model Parameters</li></ul>
+                </div>
+              </div>
+            </div>
+          </details><details class="item card" data-week="7">
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week 7 · Structs, classes, and code organisation</h4>
+                  <p>A multi-class C++ practice repo and a cleaner function-driven PyTorch training layout.</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>Structs, classes, constructors, member functions, and simple object design.</p>
+                  <p><strong>Read</strong><br>Work through LearnCpp class-introduction material and rewrite a past procedural file into a small class.</p>
+                  <ul><li>DatasetInfo class</li><li>Logger class</li><li>Timer class</li></ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>Move from notebook-style fragments into a structured training module with helper functions and config values.</p>
+                  <p><strong>Read</strong><br>Revisit Build the Neural Network and restructure the training script into functions and modules.</p>
+                  <ul><li>config object</li><li>training helper</li><li>validation helper</li></ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>Create a Timer class in C++ and a training_utils.py file in PyTorch.</p>
+                  <p><strong>Week must end with</strong><br>A multi-class C++ practice repo and a cleaner function-driven PyTorch training layout.</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul><li>LearnCpp Main Tutorial</li><li>cppreference</li><li>Build the Neural Network</li><li>Optimising Model Parameters</li></ul>
+                </div>
+              </div>
+            </div>
+          </details><details class="item card" data-week="8">
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week 8 · Headers, source files, operator basics, and checkpoint discipline</h4>
+                  <p>A first small multi-file C++ project plus a PyTorch run folder that saves and reloads correctly.</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>Separating headers and source files, basic const correctness, and safe operator overloading.</p>
+                  <p><strong>Read</strong><br>Continue LearnCpp into code organisation and overload introductions.</p>
+                  <ul><li>Vector2D class</li><li>MatrixShape helper</li><li>header-source split</li></ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>Checkpoint naming, state_dict handling, and clean run folders.</p>
+                  <p><strong>Read</strong><br>Read Save and Load the Model and apply it to the MLP work from Weeks 6 and 7.</p>
+                  <ul><li>best-model save</li><li>load in separate script</li><li>run folder naming</li></ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>Organise the C++ code into include and src folders and create a model-checkpoint folder layout.</p>
+                  <p><strong>Week must end with</strong><br>A first small multi-file C++ project plus a PyTorch run folder that saves and reloads correctly.</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul><li>LearnCpp Main Tutorial</li><li>Save and Load the Model</li></ul>
+                </div>
+              </div>
+            </div>
+          </details></div><div class="phase-block"><div class="phase-title"><h4>Phase 3 · Standard Library, Build Systems, and Tests</h4><span class="pill">4 weeks</span></div><details class="item card" data-week="9">
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week 9 · STL fluency and custom datasets</h4>
+                  <p>An STL exercise collection and one custom dataset module that prints sample shapes and labels.</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>vector, map, unordered_map, set, sort, find, and accumulation patterns.</p>
+                  <p><strong>Read</strong><br>Use LearnCpp for the main STL reading and cppreference to clarify exact container behaviour when necessary.</p>
+                  <ul><li>word counter</li><li>frequency map</li><li>top-k values</li><li>vector transforms</li></ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>Separate data loading from training logic using custom Dataset and DataLoader patterns.</p>
+                  <p><strong>Read</strong><br>Read Datasets and DataLoaders, then read Transforms and inspect outputs carefully.</p>
+                  <ul><li>CSV dataset</li><li>custom DataLoader</li><li>batch-shape debugger</li></ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>Create one dataset module that can be imported cleanly from a training script.</p>
+                  <p><strong>Week must end with</strong><br>An STL exercise collection and one custom dataset module that prints sample shapes and labels.</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul><li>LearnCpp Main Tutorial</li><li>cppreference</li><li>PyTorch Datasets and DataLoaders</li><li>PyTorch Transforms</li></ul>
+                </div>
+              </div>
+            </div>
+          </details><details class="item card" data-week="10">
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week 10 · Ownership, smart pointers, and repeatable training loops</h4>
+                  <p>A short ownership guide and a memory-written PyTorch training loop with validation.</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>unique_ptr, shared_ptr, ownership, and practical move semantics.</p>
+                  <p><strong>Read</strong><br>Move through LearnCpp smart pointer content and explain owners in comments and notes.</p>
+                  <ul><li>replace raw ownership with unique_ptr</li><li>ownership audit</li><li>shared_ptr necessity check</li></ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>Rebuild a full training loop from memory with validation, logging, and early stopping.</p>
+                  <p><strong>Read</strong><br>Revisit Quickstart, Optimisation, and Save and Load while writing the loop fresh.</p>
+                  <ul><li>validation loop</li><li>early stopping</li><li>history tracking</li></ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>Explain every important object owner in one C++ file and every major step in one training loop.</p>
+                  <p><strong>Week must end with</strong><br>A short ownership guide and a memory-written PyTorch training loop with validation.</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul><li>LearnCpp Main Tutorial</li><li>cppreference</li><li>PyTorch Quickstart</li><li>Optimising Model Parameters</li><li>Save and Load the Model</li></ul>
+                </div>
+              </div>
+            </div>
+          </details><details class="item card" data-week="11">
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week 11 · CMake and script-to-project transition</h4>
+                  <p>One CMake-managed C++ project and one script-based PyTorch mini-project.</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>Targets, libraries, include paths, build folders, and terminal builds.</p>
+                  <p><strong>Read</strong><br>Read CMake Getting Started first, then follow the first steps of the official CMake tutorial with a live repo.</p>
+                  <ul><li>convert older repo to CMake</li><li>split src and include</li><li>build from terminal</li></ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>Turn one notebook or loose script collection into a small script-based project layout.</p>
+                  <p><strong>Read</strong><br>Use the PyTorch Basics stack as the logic source while creating train.py and evaluate.py scripts.</p>
+                  <ul><li>train.py</li><li>evaluate.py</li><li>simple config file</li></ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>Stop relying on notebook cells as the main structure for real work.</p>
+                  <p><strong>Week must end with</strong><br>One CMake-managed C++ project and one script-based PyTorch mini-project.</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul><li>CMake Getting Started</li><li>CMake Tutorial</li><li>PyTorch Learn the Basics</li></ul>
+                </div>
+              </div>
+            </div>
+          </details><details class="item card" data-week="12">
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week 12 · Testing and project hygiene</h4>
+                  <p>A C++ repo with terminal-runnable tests and a small torch_checks folder.</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>Unit tests, assertions, fixtures, and edge-case design.</p>
+                  <p><strong>Read</strong><br>Read the GoogleTest Primer first, then wire it into the project using the CMake quickstart.</p>
+                  <ul><li>test utility functions</li><li>test edge cases</li><li>regression test for past bug</li></ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>Write validation checks for shapes, dataset assumptions, and metric utilities.</p>
+                  <p><strong>Read</strong><br>Use the earlier PyTorch modules and build tiny tests or sanity scripts around them.</p>
+                  <ul><li>shape check test</li><li>dataset sanity script</li><li>metric consistency check</li></ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>Treat tests as part of the build, not as optional extras.</p>
+                  <p><strong>Week must end with</strong><br>A C++ repo with terminal-runnable tests and a small torch_checks folder.</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul><li>GoogleTest Primer</li><li>GoogleTest Quickstart with CMake</li><li>CMake Tutorial</li></ul>
+                </div>
+              </div>
+            </div>
+          </details></div><div class="phase-block"><div class="phase-title"><h4>Phase 4 · Deep PyTorch Fluency and Reproducibility</h4><span class="pill">4 weeks</span></div><details class="item card" data-week="13">
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week 13 · Tensor transformation fluency week</h4>
+                  <p>A tensor playbook script with at least twenty clear examples and printed shape explanations.</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>Keep C++ alive with one short review drill each day rather than pushing new theory hard.</p>
+                  <p><strong>Read</strong><br>Use older notes, one Exercism problem, and one STL refresh during the week.</p>
+                  <ul><li>one review drill per day</li><li>one STL rewrite</li><li>one small bug hunt</li></ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>Masking, reshaping, reductions, stacking, concatenation, and dimension reasoning until it feels automatic.</p>
+                  <p><strong>Read</strong><br>Work heavily with the Tensors tutorial and use the 60 Minute Blitz only as a quick review support.</p>
+                  <ul><li>masking lab</li><li>reshape lab</li><li>reduction lab</li><li>stack-cat lab</li></ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>Create a single tensor playbook file with many tiny examples rather than one large abstract note.</p>
+                  <p><strong>Week must end with</strong><br>A tensor playbook script with at least twenty clear examples and printed shape explanations.</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul><li>PyTorch Tensors</li><li>PyTorch 60 Minute Blitz</li><li>Exercism C++ Track</li></ul>
+                </div>
+              </div>
+            </div>
+          </details><details class="item card" data-week="14">
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week 14 · Three dataset patterns in one repository</h4>
+                  <p>A dataset_patterns repository with three working loaders and visible batch-shape inspection.</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>Maintenance only, with light class and test reviews.</p>
+                  <p><strong>Read</strong><br>Review one old class and one test file only; keep C++ warm but not dominant.</p>
+                  <ul><li>one light refactor</li><li>one test improvement</li></ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>Build tabular, image, and text dataset patterns with explicit transforms and batch checks.</p>
+                  <p><strong>Read</strong><br>Use Datasets and DataLoaders plus Transforms as the core study path for the week.</p>
+                  <ul><li>tabular dataset</li><li>image dataset</li><li>text dataset</li></ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>Put all three dataset styles into one organised repo with shared conventions.</p>
+                  <p><strong>Week must end with</strong><br>A dataset_patterns repository with three working loaders and visible batch-shape inspection.</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul><li>PyTorch Datasets and DataLoaders</li><li>PyTorch Transforms</li><li>PyTorch Learn the Basics</li></ul>
+                </div>
+              </div>
+            </div>
+          </details><details class="item card" data-week="15">
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week 15 · Training loop mastery and run control</h4>
+                  <p>A training package that can train, validate, save, resume, and log cleanly.</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>Keep one short C++ drill and one refactor alive so the language does not cool down.</p>
+                  <p><strong>Read</strong><br>Use maintenance only, not heavy new reading.</p>
+                  <ul><li>one small exercise</li><li>one file cleanup</li></ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>Write the same training logic three times until it can be produced from memory.</p>
+                  <p><strong>Read</strong><br>Revisit Quickstart, Optimisation, and Save and Load in a deliberate loop-building sequence.</p>
+                  <ul><li>baseline loop</li><li>validation loop</li><li>checkpoint-resume loop</li></ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>Run the same experiment twice and compare reproducibility basics and file outputs.</p>
+                  <p><strong>Week must end with</strong><br>A training package that can train, validate, save, resume, and log cleanly.</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul><li>PyTorch Quickstart</li><li>Optimising Model Parameters</li><li>Save and Load the Model</li></ul>
+                </div>
+              </div>
+            </div>
+          </details><details class="item card" data-week="16">
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week 16 · Reproducibility, saving discipline, and clean runs</h4>
+                  <p>A reproducible experiment template with recoverable runs and clean artefacts.</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>Review CMake, tests, and smart pointers through old repos.</p>
+                  <p><strong>Read</strong><br>Read notes and touch one old build pipeline so C++ project hygiene stays active.</p>
+                  <ul><li>one build check</li><li>one regression test</li><li>one cleanup pass</li></ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>Finalise run folders, best-model saving, config storage, and result export habits.</p>
+                  <p><strong>Read</strong><br>Use Save and Load plus the Basics workflow pages as a final reproducibility pass.</p>
+                  <ul><li>config save</li><li>metric export</li><li>best-weight reload</li><li>demo inference</li></ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>Create a standard run directory structure that every later project will follow.</p>
+                  <p><strong>Week must end with</strong><br>A reproducible experiment template with recoverable runs and clean artefacts.</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul><li>Save and Load the Model</li><li>PyTorch Learn the Basics</li><li>CMake Tutorial</li></ul>
+                </div>
+              </div>
+            </div>
+          </details></div><div class="phase-block"><div class="phase-title"><h4>Phase 5 · Portfolio Build 1 and Portfolio Build 2</h4><span class="pill">4 weeks</span></div><details class="item card" data-week="17">
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week 17 · Project 1 scaffold, PyTorch training toolkit</h4>
+                  <p>A clean repository skeleton with src, configs, models, data, tests, and README.</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>Only maintenance drills while the project framework takes over.</p>
+                  <p><strong>Read</strong><br>Keep one light drill and one short review note during the week.</p>
+                  <ul><li>one small drill per day</li></ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>Plan and scaffold a reusable training toolkit with clear project structure.</p>
+                  <p><strong>Read</strong><br>Use the Basics stack as the logic base and treat past scripts as raw material to be cleaned up.</p>
+                  <ul><li>repo layout</li><li>config file</li><li>entry point design</li><li>README sketch</li></ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>Design before coding. Keep the first repository architecture simple and defensible.</p>
+                  <p><strong>Week must end with</strong><br>A clean repository skeleton with src, configs, models, data, tests, and README.</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul><li>PyTorch Learn the Basics</li><li>PyTorch Datasets and DataLoaders</li><li>Save and Load the Model</li></ul>
+                </div>
+              </div>
+            </div>
+          </details><details class="item card" data-week="18">
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week 18 · Project 1 implementation, toolkit completion</h4>
+                  <p>A functioning PyTorch toolkit repo that another person can run end to end.</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>Maintenance only. Preserve the habit without stealing time from the main build.</p>
+                  <p><strong>Read</strong><br>No major new reading.</p>
+                  <ul><li>one review drill</li><li>one ownership review</li></ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>Complete dataset handling, validation, plotting, checkpointing, and error analysis.</p>
+                  <p><strong>Read</strong><br>Pull together Datasets, Build Model, Optimisation, and Save and Load into one coherent toolkit.</p>
+                  <ul><li>dataset integration</li><li>validation module</li><li>plot generation</li><li>error analysis</li></ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>Test the whole repository from a clean environment before calling it done.</p>
+                  <p><strong>Week must end with</strong><br>A functioning PyTorch toolkit repo that another person can run end to end.</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul><li>PyTorch Datasets and DataLoaders</li><li>Build the Neural Network</li><li>Optimising Model Parameters</li><li>Save and Load the Model</li></ul>
+                </div>
+              </div>
+            </div>
+          </details><details class="item card" data-week="19">
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week 19 · Project 2 scaffold, C++ utility library</h4>
+                  <p>A multi-file C++ repo scaffold with src, include, tests, and docs folders in place.</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>Design a serious multi-file utility library for AI work with clear interfaces.</p>
+                  <p><strong>Read</strong><br>Use LearnCpp, CMake Tutorial, and cppreference as needed while planning the library surface.</p>
+                  <ul><li>CSV reader plan</li><li>timer design</li><li>logger design</li><li>config reader plan</li></ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>Light maintenance drills only so PyTorch fluency stays warm.</p>
+                  <p><strong>Read</strong><br>A short review of one old data or loop module is enough.</p>
+                  <ul><li>one maintenance script</li></ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>Keep interfaces small, testable, and free from unnecessary cleverness.</p>
+                  <p><strong>Week must end with</strong><br>A multi-file C++ repo scaffold with src, include, tests, and docs folders in place.</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul><li>LearnCpp Main Tutorial</li><li>cppreference</li><li>CMake Tutorial</li><li>GoogleTest Primer</li></ul>
+                </div>
+              </div>
+            </div>
+          </details><details class="item card" data-week="20">
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week 20 · Project 2 implementation, tests, and polish</h4>
+                  <p>A serious C++ repo with CMake, unit tests, and a clean README.</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>Complete the C++ utility library and prove that it builds cleanly from scratch.</p>
+                  <p><strong>Read</strong><br>Use cppreference for exact APIs and the GoogleTest docs for edge-case thinking.</p>
+                  <ul><li>CSV parser</li><li>timer</li><li>logger</li><li>config parser</li><li>full test pass</li></ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>Minimal maintenance only, mostly short review scripts.</p>
+                  <p><strong>Read</strong><br>Short refresh only.</p>
+                  <ul><li>metric utility check</li></ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>Document build steps clearly enough that another person could reproduce them quickly.</p>
+                  <p><strong>Week must end with</strong><br>A serious C++ repo with CMake, unit tests, and a clean README.</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul><li>cppreference</li><li>CMake Tutorial</li><li>GoogleTest Primer</li><li>GoogleTest Quickstart with CMake</li></ul>
+                </div>
+              </div>
+            </div>
+          </details></div><div class="phase-block"><div class="phase-title"><h4>Phase 6 · Bridge into AI Engineering</h4><span class="pill">4 weeks</span></div><details class="item card" data-week="21">
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week 21 · Bridge architecture and C++ frontend orientation</h4>
+                  <p>A one-page bridge design note and a repository scaffold for the final project.</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>Understand what changes when PyTorch work crosses into C++ territory.</p>
+                  <p><strong>Read</strong><br>Read the PyTorch C++ Frontend tutorial first, then inspect the C++ API docs only for exact symbols and namespaces.</p>
+                  <ul><li>architecture note</li><li>tooling setup</li><li>input-output contract sketch</li></ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>Clarify model and inference assumptions from the Python side before bridging.</p>
+                  <p><strong>Read</strong><br>Review export, inference, and input shape expectations from the existing Python code.</p>
+                  <ul><li>inference script</li><li>input contract check</li><li>output comparison plan</li></ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>Decide early whether the bridge project will be a tiny inference app or a custom operator path.</p>
+                  <p><strong>Week must end with</strong><br>A one-page bridge design note and a repository scaffold for the final project.</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul><li>Using the PyTorch C++ Frontend</li><li>PyTorch C++ API</li></ul>
+                </div>
+              </div>
+            </div>
+          </details><details class="item card" data-week="22">
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week 22 · Bridge option A, tiny C++ inference application</h4>
+                  <p>A minimal but working C++ inference prototype with clear build instructions.</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>Build a minimal C++ app that loads data, calls the model path, and prints predictions or outputs clearly.</p>
+                  <p><strong>Read</strong><br>Continue with the C++ Frontend material and use the API docs only when the implementation needs exact details.</p>
+                  <ul><li>minimal app setup</li><li>input pipeline</li><li>output handling</li></ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>Check inference parity between the Python and C++ sides.</p>
+                  <p><strong>Read</strong><br>Review the Python inference script and compare shapes, preprocessing, and outputs carefully.</p>
+                  <ul><li>parity check</li><li>sample comparison</li></ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>Keep the scope tiny enough to finish properly rather than aiming for flashy complexity.</p>
+                  <p><strong>Week must end with</strong><br>A minimal but working C++ inference prototype with clear build instructions.</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul><li>Using the PyTorch C++ Frontend</li><li>PyTorch C++ API</li><li>CMake Tutorial</li></ul>
+                </div>
+              </div>
+            </div>
+          </details><details class="item card" data-week="23">
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week 23 · Bridge option B, custom operator path</h4>
+                  <p>A small custom-operator repo or a robust prototype that clearly shows the Python-C++ seam.</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>Build one small custom operator and integrate it into a PyTorch workflow with correctness checks.</p>
+                  <p><strong>Read</strong><br>Use the Custom C++ and CUDA Operators tutorial as the main teaching path for the week.</p>
+                  <ul><li>operator scaffold</li><li>registration</li><li>correctness test</li></ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>Use Python as the test harness for verifying the extension behaviour against a baseline.</p>
+                  <p><strong>Read</strong><br>Keep the Python side focused on correctness comparison and integration.</p>
+                  <ul><li>baseline comparison</li><li>operator call test</li></ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>Correctness first. Performance language comes later, after the outputs are trusted.</p>
+                  <p><strong>Week must end with</strong><br>A small custom-operator repo or a robust prototype that clearly shows the Python-C++ seam.</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul><li>Custom C++ and CUDA Operators</li><li>PyTorch C++ API</li></ul>
+                </div>
+              </div>
+            </div>
+          </details><details class="item card" data-week="24">
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week 24 · Final polish, portfolio packaging, and evidence cleanup</h4>
+                  <p>A portfolio-ready bridge project and a clean archive of the full 24-week journey.</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>Polish build files, final refactors, and README clarity.</p>
+                  <p><strong>Read</strong><br>Read only what is needed to close remaining gaps. The priority is quality, not new theory.</p>
+                  <ul><li>final refactor</li><li>final build from scratch</li><li>final test run</li></ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>Prepare demo scripts, screenshots, technical notes, and result summaries.</p>
+                  <p><strong>Read</strong><br>Review only the resources that directly strengthen the final README or usage example.</p>
+                  <ul><li>demo script</li><li>result snapshot</li><li>usage validation</li></ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>Every main project should be clonable and runnable with clear instructions.</p>
+                  <p><strong>Week must end with</strong><br>A portfolio-ready bridge project and a clean archive of the full 24-week journey.</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul><li>Using the PyTorch C++ Frontend</li><li>Custom C++ and CUDA Operators</li><li>PyTorch C++ API</li><li>CMake Tutorial</li><li>GoogleTest Primer</li></ul>
+                </div>
+              </div>
+            </div>
+          </details></div></div>
+      </section>
+
+      <section id="resources" class="section card">
+        <div class="section-header">
+          <div>
+            <div class="eyebrow">Exact Resource Stack</div>
+            <h3>Resources with a defined role</h3>
+            <p>Every resource here has a job, a timing window, and a 
+usage rule. That prevents wasted hours on material that is good in 
+general but wrong for the stage.</p>
+          </div>
+        </div>
+        <div class="search-row">
+          <input class="input" id="resourceSearch" type="search" placeholder="Search by topic, role, or category">
+          <select class="select" id="resourceFilter"><option value="all" selected="selected">All categories</option><option value="C++ Core">C++ Core</option><option value="C++ Practice">C++ Practice</option><option value="C++ Reference">C++ Reference</option><option value="Build Tools">Build Tools</option><option value="Testing">Testing</option><option value="PyTorch Core">PyTorch Core</option><option value="PyTorch Supplement">PyTorch Supplement</option><option value="Bridge Layer">Bridge Layer</option></select>
+        </div>
+        <div class="resource-grid" id="resourceGrid">
+        <details class="item card" open="">
+          <summary>
+            <div class="summary-row">
+              <div>
+                <h4>LearnCpp Main Tutorial</h4>
+                <div class="summary-meta"><span class="tag">C++ Core</span></div>
+              </div>
+              <a class="btn ghost" href="https://www.learncpp.com/" target="_blank" rel="noreferrer">Open</a>
+            </div>
+            <p>Primary teaching spine for modern C++ from zero to solid intermediate project work.</p>
+          </summary>
+          <div class="details-body">
+            <p><strong>When to Use It</strong><br>Use every week from Week 1 through Week 20.</p>
+            <p><strong>Best For</strong><br>Core language syntax, control flow, functions, memory, classes, STL, templates, and modern habits.</p>
+            <p><strong>Use It This Way</strong></p>
+            <ul><li>Read sequentially rather than hopping across topics.</li><li>Type every example by hand before changing it.</li><li>Do not move on until one variation can be written from memory.</li></ul>
+            <p><strong>Watch Out For</strong><br>Do not replace this with random video playlists.</p>
+          </div>
+        </details>
+      
+        <details class="item card" open="">
+          <summary>
+            <div class="summary-row">
+              <div>
+                <h4>LearnCpp Introduction</h4>
+                <div class="summary-meta"><span class="tag">C++ Core</span></div>
+              </div>
+              <a class="btn ghost" href="https://www.learncpp.com/cpp-tutorial/introduction-to-these-tutorials/" target="_blank" rel="noreferrer">Open</a>
+            </div>
+            <p>Entry page that explains the course order and mindset.</p>
+          </summary>
+          <div class="details-body">
+            <p><strong>When to Use It</strong><br>Read at the start of Week 1 and again if the roadmap pace feels messy.</p>
+            <p><strong>Best For</strong><br>Understanding how the whole C++ sequence should be followed.</p>
+            <p><strong>Use It This Way</strong></p>
+            <ul><li>Read this before the first compiler setup session.</li><li>Keep the course sequential from the start.</li></ul>
+            <p><strong>Watch Out For</strong><br>Do not cherry-pick advanced topics early.</p>
+          </div>
+        </details>
+      
+        <details class="item card" open="">
+          <summary>
+            <div class="summary-row">
+              <div>
+                <h4>Exercism C++ Track</h4>
+                <div class="summary-meta"><span class="tag">C++ Practice</span></div>
+              </div>
+              <a class="btn ghost" href="https://exercism.org/tracks/cpp" target="_blank" rel="noreferrer">Open</a>
+            </div>
+            <p>Main drill ground for turning lessons into working problem-solving speed.</p>
+          </summary>
+          <div class="details-body">
+            <p><strong>When to Use It</strong><br>Use from Week 1 onwards after the daily lesson block.</p>
+            <p><strong>Best For</strong><br>Small functions, strings, vectors, STL usage, and edge-case thinking.</p>
+            <p><strong>Use It This Way</strong></p>
+            <ul><li>Solve one exercise after the main lesson.</li><li>Refactor at least once after the first accepted solution.</li><li>Write a short note on what changed between version one and version two.</li></ul>
+            <p><strong>Watch Out For</strong><br>Do not use it as the first place to learn a brand-new topic.</p>
+          </div>
+        </details>
+      
+        <details class="item card" open="">
+          <summary>
+            <div class="summary-row">
+              <div>
+                <h4>cppreference</h4>
+                <div class="summary-meta"><span class="tag">C++ Reference</span></div>
+              </div>
+              <a class="btn ghost" href="https://cppreference.com/" target="_blank" rel="noreferrer">Open</a>
+            </div>
+            <p>Precise lookup source for standard-library behaviour and syntax details.</p>
+          </summary>
+          <div class="details-body">
+            <p><strong>When to Use It</strong><br>Use from Week 4 onwards, especially in STL and smart pointer weeks.</p>
+            <p><strong>Best For</strong><br>API details, iterator rules, container methods, algorithm behaviour, and complexity checks.</p>
+            <p><strong>Use It This Way</strong></p>
+            <ul><li>Open it only when exact behaviour is unclear.</li><li>Return to the main lesson after the lookup.</li></ul>
+            <p><strong>Watch Out For</strong><br>Do not treat it as a beginner teaching course.</p>
+          </div>
+        </details>
+      
+        <details class="item card" open="">
+          <summary>
+            <div class="summary-row">
+              <div>
+                <h4>CMake Getting Started</h4>
+                <div class="summary-meta"><span class="tag">Build Tools</span></div>
+              </div>
+              <a class="btn ghost" href="https://cmake.org/getting-started/" target="_blank" rel="noreferrer">Open</a>
+            </div>
+            <p>Official entry point for understanding why CMake matters and how targets work.</p>
+          </summary>
+          <div class="details-body">
+            <p><strong>When to Use It</strong><br>Begin in Week 11 before writing the first real CMakeLists.txt file.</p>
+            <p><strong>Best For</strong><br>Targets, source lists, libraries, include paths, and terminal builds.</p>
+            <p><strong>Use It This Way</strong></p>
+            <ul><li>Read once, then convert an older project immediately.</li><li>Build from the terminal before touching IDE shortcuts.</li></ul>
+            <p><strong>Watch Out For</strong><br>Do not wait until projects become large before learning the build system.</p>
+          </div>
+        </details>
+      
+        <details class="item card" open="">
+          <summary>
+            <div class="summary-row">
+              <div>
+                <h4>CMake Tutorial</h4>
+                <div class="summary-meta"><span class="tag">Build Tools</span></div>
+              </div>
+              <a class="btn ghost" href="https://cmake.org/cmake/help/latest/guide/tutorial/index.html" target="_blank" rel="noreferrer">Open</a>
+            </div>
+            <p>Step-by-step official guide for serious project structure.</p>
+          </summary>
+          <div class="details-body">
+            <p><strong>When to Use It</strong><br>Use in Weeks 11 and 12, then again in the C++ utility-library project.</p>
+            <p><strong>Best For</strong><br>Executables, libraries, subdirectories, configuration, presets, and target-based design.</p>
+            <p><strong>Use It This Way</strong></p>
+            <ul><li>Follow the early steps while restructuring a real repo.</li><li>Mirror the tutorial with personal code rather than reading passively.</li></ul>
+            <p><strong>Watch Out For</strong><br>Do not read the tutorial without applying it to a live repository.</p>
+          </div>
+        </details>
+      
+        <details class="item card" open="">
+          <summary>
+            <div class="summary-row">
+              <div>
+                <h4>GoogleTest Primer</h4>
+                <div class="summary-meta"><span class="tag">Testing</span></div>
+              </div>
+              <a class="btn ghost" href="https://google.github.io/googletest/primer.html" target="_blank" rel="noreferrer">Open</a>
+            </div>
+            <p>First official guide for unit testing in C++.</p>
+          </summary>
+          <div class="details-body">
+            <p><strong>When to Use It</strong><br>Start in Week 12 and use it whenever the C++ projects stop being toy files.</p>
+            <p><strong>Best For</strong><br>Assertions, fixtures, edge cases, and testable design.</p>
+            <p><strong>Use It This Way</strong></p>
+            <ul><li>Write at least three tests for one class or function.</li><li>Cover one normal case, one boundary case, and one failure case.</li></ul>
+            <p><strong>Watch Out For</strong><br>Do not test only happy paths.</p>
+          </div>
+        </details>
+      
+        <details class="item card" open="">
+          <summary>
+            <div class="summary-row">
+              <div>
+                <h4>GoogleTest Quickstart with CMake</h4>
+                <div class="summary-meta"><span class="tag">Testing</span></div>
+              </div>
+              <a class="btn ghost" href="https://google.github.io/googletest/quickstart-cmake.html" target="_blank" rel="noreferrer">Open</a>
+            </div>
+            <p>Practical path for wiring tests into a CMake build.</p>
+          </summary>
+          <div class="details-body">
+            <p><strong>When to Use It</strong><br>Use directly after the Primer in Week 12.</p>
+            <p><strong>Best For</strong><br>Creating a repeatable test target from the terminal.</p>
+            <p><strong>Use It This Way</strong></p>
+            <ul><li>Integrate a tiny test target first.</li><li>Run tests from the command line before considering CI.</li></ul>
+            <p><strong>Watch Out For</strong><br>Do not postpone integration until the repo becomes messy.</p>
+          </div>
+        </details>
+      
+        <details class="item card" open="">
+          <summary>
+            <div class="summary-row">
+              <div>
+                <h4>PyTorch Learn the Basics</h4>
+                <div class="summary-meta"><span class="tag">PyTorch Core</span></div>
+              </div>
+              <a class="btn ghost" href="https://docs.pytorch.org/tutorials/beginner/basics/intro.html" target="_blank" rel="noreferrer">Open</a>
+            </div>
+            <p>Primary teaching spine for the full beginner workflow in PyTorch.</p>
+          </summary>
+          <div class="details-body">
+            <p><strong>When to Use It</strong><br>Use every week from Week 1 to Week 18.</p>
+            <p><strong>Best For</strong><br>Data, models, autograd, optimisation, saving, and a clean beginner-to-practical path.</p>
+            <p><strong>Use It This Way</strong></p>
+            <ul><li>Follow the sequence in order.</li><li>Rebuild each tutorial as a fresh local script.</li><li>Change one thing in every example and log the outcome.</li></ul>
+            <p><strong>Watch Out For</strong><br>Do not scatter attention across many beginner courses at the same time.</p>
+          </div>
+        </details>
+      
+        <details class="item card" open="">
+          <summary>
+            <div class="summary-row">
+              <div>
+                <h4>PyTorch Quickstart</h4>
+                <div class="summary-meta"><span class="tag">PyTorch Core</span></div>
+              </div>
+              <a class="btn ghost" href="https://docs.pytorch.org/tutorials/beginner/basics/quickstart_tutorial.html" target="_blank" rel="noreferrer">Open</a>
+            </div>
+            <p>Compressed overview of the full training workflow.</p>
+          </summary>
+          <div class="details-body">
+            <p><strong>When to Use It</strong><br>Read once in Week 1, then revisit before Project 1.</p>
+            <p><strong>Best For</strong><br>Seeing the whole training loop before drilling parts one by one.</p>
+            <p><strong>Use It This Way</strong></p>
+            <ul><li>Recreate the script from memory by the end of Month 1.</li><li>Use it as a pipeline checkpoint, not as the whole curriculum.</li></ul>
+            <p><strong>Watch Out For</strong><br>Do not mistake the overview for full fluency.</p>
+          </div>
+        </details>
+      
+        <details class="item card" open="">
+          <summary>
+            <div class="summary-row">
+              <div>
+                <h4>PyTorch Tensors</h4>
+                <div class="summary-meta"><span class="tag">PyTorch Core</span></div>
+              </div>
+              <a class="btn ghost" href="https://docs.pytorch.org/tutorials/beginner/basics/tensorqs_tutorial.html" target="_blank" rel="noreferrer">Open</a>
+            </div>
+            <p>Main source for tensor shape fluency, indexing, joining, reshaping, and device moves.</p>
+          </summary>
+          <div class="details-body">
+            <p><strong>When to Use It</strong><br>Begin in Week 1 and revisit heavily in Weeks 13 to 16.</p>
+            <p><strong>Best For</strong><br>Removing hesitation around tensor manipulation.</p>
+            <p><strong>Use It This Way</strong></p>
+            <ul><li>Create a personal tensor lab with at least fifteen runnable examples.</li><li>Write down every recurring shape mistake in the notebook.</li></ul>
+            <p><strong>Watch Out For</strong><br>Do not leave tensor shape confusion unrecorded.</p>
+          </div>
+        </details>
+      
+        <details class="item card" open="">
+          <summary>
+            <div class="summary-row">
+              <div>
+                <h4>PyTorch Datasets and DataLoaders</h4>
+                <div class="summary-meta"><span class="tag">PyTorch Core</span></div>
+              </div>
+              <a class="btn ghost" href="https://docs.pytorch.org/tutorials/beginner/basics/data_tutorial.html" target="_blank" rel="noreferrer">Open</a>
+            </div>
+            <p>Official guide to moving data logic out of the training loop.</p>
+          </summary>
+          <div class="details-body">
+            <p><strong>When to Use It</strong><br>Use in Week 9 and revisit in Week 14 and Project 1.</p>
+            <p><strong>Best For</strong><br>Custom datasets, batch inspection, and data-pipeline discipline.</p>
+            <p><strong>Use It This Way</strong></p>
+            <ul><li>Print sample-label pairs and batch shapes every time.</li><li>Keep dataset code separate from training code.</li></ul>
+            <p><strong>Watch Out For</strong><br>Do not trust a DataLoader until shapes and labels are checked.</p>
+          </div>
+        </details>
+      
+        <details class="item card" open="">
+          <summary>
+            <div class="summary-row">
+              <div>
+                <h4>PyTorch Transforms</h4>
+                <div class="summary-meta"><span class="tag">PyTorch Core</span></div>
+              </div>
+              <a class="btn ghost" href="https://docs.pytorch.org/tutorials/beginner/basics/transforms_tutorial.html" target="_blank" rel="noreferrer">Open</a>
+            </div>
+            <p>Official reference for feature and target transformations.</p>
+          </summary>
+          <div class="details-body">
+            <p><strong>When to Use It</strong><br>Use alongside data work in Weeks 9 and 14.</p>
+            <p><strong>Best For</strong><br>Image preprocessing, target transformation, and explicit input preparation.</p>
+            <p><strong>Use It This Way</strong></p>
+            <ul><li>Apply one input transform and one target transform in a small example.</li><li>Inspect the output shape and type after transformation.</li></ul>
+            <p><strong>Watch Out For</strong><br>Do not apply transforms blindly.</p>
+          </div>
+        </details>
+      
+        <details class="item card" open="">
+          <summary>
+            <div class="summary-row">
+              <div>
+                <h4>Build the Neural Network</h4>
+                <div class="summary-meta"><span class="tag">PyTorch Core</span></div>
+              </div>
+              <a class="btn ghost" href="https://docs.pytorch.org/tutorials/beginner/basics/buildmodel_tutorial.html" target="_blank" rel="noreferrer">Open</a>
+            </div>
+            <p>Official tutorial for class-based model construction with nn.Module.</p>
+          </summary>
+          <div class="details-body">
+            <p><strong>When to Use It</strong><br>Use in Weeks 6 and 7 and again in Project 1.</p>
+            <p><strong>Best For</strong><br>Layer design, model classes, and parameter inspection.</p>
+            <p><strong>Use It This Way</strong></p>
+            <ul><li>Write the tutorial once exactly.</li><li>Then rebuild the model from memory with renamed layers and printed shapes.</li></ul>
+            <p><strong>Watch Out For</strong><br>Do not hide model definition inside one giant training file.</p>
+          </div>
+        </details>
+      
+        <details class="item card" open="">
+          <summary>
+            <div class="summary-row">
+              <div>
+                <h4>PyTorch Autograd</h4>
+                <div class="summary-meta"><span class="tag">PyTorch Core</span></div>
+              </div>
+              <a class="btn ghost" href="https://docs.pytorch.org/tutorials/beginner/basics/autogradqs_tutorial.html" target="_blank" rel="noreferrer">Open</a>
+            </div>
+            <p>Official explanation of automatic differentiation and computation graphs.</p>
+          </summary>
+          <div class="details-body">
+            <p><strong>When to Use It</strong><br>Use in Week 5 and revisit when gradients feel unclear.</p>
+            <p><strong>Best For</strong><br>requires_grad, backward passes, and graph intuition.</p>
+            <p><strong>Use It This Way</strong></p>
+            <ul><li>Run tiny examples with printed gradients.</li><li>Explain one gradient flow in plain English in the notes.</li></ul>
+            <p><strong>Watch Out For</strong><br>Do not rely on black-box backprop without understanding tensors and gradients.</p>
+          </div>
+        </details>
+      
+        <details class="item card" open="">
+          <summary>
+            <div class="summary-row">
+              <div>
+                <h4>Optimising Model Parameters</h4>
+                <div class="summary-meta"><span class="tag">PyTorch Core</span></div>
+              </div>
+              <a class="btn ghost" href="https://docs.pytorch.org/tutorials/beginner/basics/optimization_tutorial.html" target="_blank" rel="noreferrer">Open</a>
+            </div>
+            <p>Official optimiser and training-step tutorial.</p>
+          </summary>
+          <div class="details-body">
+            <p><strong>When to Use It</strong><br>Use in Weeks 6 and 15.</p>
+            <p><strong>Best For</strong><br>Loss, zero_grad, backward, step, and loop structure.</p>
+            <p><strong>Use It This Way</strong></p>
+            <ul><li>Rebuild the train step from memory.</li><li>Test one optimiser change and record what happened.</li></ul>
+            <p><strong>Watch Out For</strong><br>Do not let the optimiser remain magic.</p>
+          </div>
+        </details>
+      
+        <details class="item card" open="">
+          <summary>
+            <div class="summary-row">
+              <div>
+                <h4>Save and Load the Model</h4>
+                <div class="summary-meta"><span class="tag">PyTorch Core</span></div>
+              </div>
+              <a class="btn ghost" href="https://docs.pytorch.org/tutorials/beginner/basics/saveloadrun_tutorial.html" target="_blank" rel="noreferrer">Open</a>
+            </div>
+            <p>Official checkpoint and weight-loading guide.</p>
+          </summary>
+          <div class="details-body">
+            <p><strong>When to Use It</strong><br>Use in Weeks 8, 15, and 16, then keep it active in all projects.</p>
+            <p><strong>Best For</strong><br>state_dict, weight loading, checkpoint discipline, and safe reload patterns.</p>
+            <p><strong>Use It This Way</strong></p>
+            <ul><li>Save the best model from at least one training run.</li><li>Reload it in a separate script before calling the week finished.</li></ul>
+            <p><strong>Watch Out For</strong><br>Do not claim a project is complete until loading has been verified.</p>
+          </div>
+        </details>
+      
+        <details class="item card" open="">
+          <summary>
+            <div class="summary-row">
+              <div>
+                <h4>PyTorch 60 Minute Blitz</h4>
+                <div class="summary-meta"><span class="tag">PyTorch Supplement</span></div>
+              </div>
+              <a class="btn ghost" href="https://docs.pytorch.org/tutorials/beginner/blitz/index.html" target="_blank" rel="noreferrer">Open</a>
+            </div>
+            <p>Compact re-entry resource for fast review weeks.</p>
+          </summary>
+          <div class="details-body">
+            <p><strong>When to Use It</strong><br>Use on review weekends or when a concept needs a rapid second pass.</p>
+            <p><strong>Best For</strong><br>Fast refresh of tensors, autograd, and modules.</p>
+            <p><strong>Use It This Way</strong></p>
+            <ul><li>Use it to compress revision, not to replace the main Basics path.</li></ul>
+            <p><strong>Watch Out For</strong><br>Do not swap between Blitz and Learn the Basics every day.</p>
+          </div>
+        </details>
+      
+        <details class="item card" open="">
+          <summary>
+            <div class="summary-row">
+              <div>
+                <h4>Using the PyTorch C++ Frontend</h4>
+                <div class="summary-meta"><span class="tag">Bridge Layer</span></div>
+              </div>
+              <a class="btn ghost" href="https://docs.pytorch.org/tutorials/advanced/cpp_frontend.html" target="_blank" rel="noreferrer">Open</a>
+            </div>
+            <p>Official end-to-end tutorial for working with PyTorch from C++.</p>
+          </summary>
+          <div class="details-body">
+            <p><strong>When to Use It</strong><br>Begin in Week 21 after C++ and PyTorch foundations are stable.</p>
+            <p><strong>Best For</strong><br>Understanding how model work translates into the C++ frontend.</p>
+            <p><strong>Use It This Way</strong></p>
+            <ul><li>Read slowly and keep the first build tiny.</li><li>Map the architecture before compiling.</li></ul>
+            <p><strong>Watch Out For</strong><br>Do not start here before CMake and C++ basics are comfortable.</p>
+          </div>
+        </details>
+      
+        <details class="item card" open="">
+          <summary>
+            <div class="summary-row">
+              <div>
+                <h4>PyTorch C++ API</h4>
+                <div class="summary-meta"><span class="tag">Bridge Layer</span></div>
+              </div>
+              <a class="btn ghost" href="https://docs.pytorch.org/cppdocs/" target="_blank" rel="noreferrer">Open</a>
+            </div>
+            <p>Reference docs for the public C++ API.</p>
+          </summary>
+          <div class="details-body">
+            <p><strong>When to Use It</strong><br>Use in Weeks 21 to 24 when exact classes or namespaces are unclear.</p>
+            <p><strong>Best For</strong><br>ATen, autograd, C++ frontend, serialisation, and API details.</p>
+            <p><strong>Use It This Way</strong></p>
+            <ul><li>Use as a reference after the main bridge tutorial introduces the concepts.</li></ul>
+            <p><strong>Watch Out For</strong><br>Do not treat the API docs as the first teaching source.</p>
+          </div>
+        </details>
+      
+        <details class="item card" open="">
+          <summary>
+            <div class="summary-row">
+              <div>
+                <h4>Custom C++ and CUDA Operators</h4>
+                <div class="summary-meta"><span class="tag">Bridge Layer</span></div>
+              </div>
+              <a class="btn ghost" href="https://docs.pytorch.org/tutorials/advanced/cpp_custom_ops.html" target="_blank" rel="noreferrer">Open</a>
+            </div>
+            <p>Official tutorial for authoring custom operators in C++ and CUDA.</p>
+          </summary>
+          <div class="details-body">
+            <p><strong>When to Use It</strong><br>Use in Weeks 23 and 24 if the bridge project follows the extension route.</p>
+            <p><strong>Best For</strong><br>Understanding how Python-side workflows connect to compiled extensions.</p>
+            <p><strong>Use It This Way</strong></p>
+            <ul><li>Keep the first operator tiny and correctness-focused.</li><li>Compare outputs against a pure Python baseline.</li></ul>
+            <p><strong>Watch Out For</strong><br>Do not chase performance before correctness is proved.</p>
+          </div>
+        </details>
+      </div>
+      </section>
+
+      <section id="projects" class="section card">
+        <div class="section-header">
+          <div>
+            <div class="eyebrow">Portfolio Projects</div>
+            <h3>Projects that prove engineering practice</h3>
+            <p>These projects exist to show that the learner can move 
+from exercises into structured, reproducible, and explainable technical 
+work.</p>
+          </div>
+        </div>
+        <div class="project-grid" id="projectGrid">
+        <details class="item card" open="">
+          <summary>
+            <div class="summary-row"><h4>Project 1 · PyTorch Training Toolkit</h4><span class="badge">Portfolio</span></div>
+            <p>A reusable training repository that proves strong Python-side engineering discipline rather than notebook-only experimentation.</p>
+          </summary>
+          <div class="details-body">
+            <ul><li>src, configs, models, data, scripts, tests, and README folders</li><li>custom dataset or loader logic</li><li>validation loop, checkpointing, and metrics logging</li><li>plotting or error-analysis output</li><li>one clean example command that another person can run</li></ul>
+            <p style="margin-top:12px;"><strong>Proof of quality</strong><br>The repository should run from a clean environment and produce a visible training artefact, metrics file, and saved weights.</p>
+          </div>
+        </details>
+      
+        <details class="item card" open="">
+          <summary>
+            <div class="summary-row"><h4>Project 2 · C++ Utility Library for AI Work</h4><span class="badge">Portfolio</span></div>
+            <p>A small but serious C++ library showing build discipline, testing, ownership clarity, and reusable tooling habits.</p>
+          </summary>
+          <div class="details-body">
+            <ul><li>CSV reader or parser</li><li>timer and logger utilities</li><li>basic config reader</li><li>unit tests wired through CMake</li><li>clear build and test instructions</li></ul>
+            <p style="margin-top:12px;"><strong>Proof of quality</strong><br>A fresh clone should build cleanly, run tests from the terminal, and expose simple reusable components.</p>
+          </div>
+        </details>
+      
+        <details class="item card" open="">
+          <summary>
+            <div class="summary-row"><h4>Project 3 · Python to C++ Bridge Project</h4><span class="badge">Portfolio</span></div>
+            <p>The portfolio piece that demonstrates where model work meets systems-style implementation.</p>
+          </summary>
+          <div class="details-body">
+            <ul><li>option A, tiny C++ inference application or option B, small custom operator</li><li>correctness comparison against a Python baseline</li><li>design note explaining the boundary between Python and C++</li><li>final README with exact build and run steps</li></ul>
+            <p style="margin-top:12px;"><strong>Proof of quality</strong><br>The project should make the Python-C++ seam visible and technically understandable, not merely present code.</p>
+          </div>
+        </details>
+      </div>
+      </section>
+
+      <section id="notes" class="section card">
+        <div class="section-header">
+          <div>
+            <div class="eyebrow">Study Notebook</div>
+            <h3>Debugging notes, shape notes, and design notes</h3>
+            <p>Use this box for recurring compiler errors, tensor-shape traps, ownership confusions, build fixes, and short weekly summaries.</p>
+          </div>
+        </div>
+        <textarea class="notes" id="notesBox" placeholder="Write notes here. The browser stores them locally."></textarea>
+      </section>
+
+      <div class="foot">This file stores the start date, notes, and 
+checklist progress in local browser storage. Open the same file in the 
+same browser to keep continuity.</div>
+    </main>
+  </div>
+
+  <script>
+    const resources = [{"id": "learncpp-home", "title": "LearnCpp Main Tutorial", "category": "C++ Core", "role": "Primary teaching spine for modern C++ from zero to solid intermediate project work.", "when": "Use every week from Week 1 through Week 20.", "bestFor": "Core language syntax, control flow, functions, memory, classes, STL, templates, and modern habits.", "usage": ["Read sequentially rather than hopping across topics.", "Type every example by hand before changing it.", "Do not move on until one variation can be written from memory."], "anti": "Do not replace this with random video playlists.", "link": "https://www.learncpp.com/"}, {"id": "learncpp-intro", "title": "LearnCpp Introduction", "category": "C++ Core", "role": "Entry page that explains the course order and mindset.", "when": "Read at the start of Week 1 and again if the roadmap pace feels messy.", "bestFor": "Understanding how the whole C++ sequence should be followed.", "usage": ["Read this before the first compiler setup session.", "Keep the course sequential from the start."], "anti": "Do not cherry-pick advanced topics early.", "link": "https://www.learncpp.com/cpp-tutorial/introduction-to-these-tutorials/"}, {"id": "exercism-cpp", "title": "Exercism C++ Track", "category": "C++ Practice", "role": "Main drill ground for turning lessons into working problem-solving speed.", "when": "Use from Week 1 onwards after the daily lesson block.", "bestFor": "Small functions, strings, vectors, STL usage, and edge-case thinking.", "usage": ["Solve one exercise after the main lesson.", "Refactor at least once after the first accepted solution.", "Write a short note on what changed between version one and version two."], "anti": "Do not use it as the first place to learn a brand-new topic.", "link": "https://exercism.org/tracks/cpp"}, {"id": "cppreference", "title": "cppreference", "category": "C++ Reference", "role": "Precise lookup source for standard-library behaviour and syntax details.", "when": "Use from Week 4 onwards, especially in STL and smart pointer weeks.", "bestFor": "API details, iterator rules, container methods, algorithm behaviour, and complexity checks.", "usage": ["Open it only when exact behaviour is unclear.", "Return to the main lesson after the lookup."], "anti": "Do not treat it as a beginner teaching course.", "link": "https://cppreference.com/"}, {"id": "cmake-start", "title": "CMake Getting Started", "category": "Build Tools", "role": "Official entry point for understanding why CMake matters and how targets work.", "when": "Begin in Week 11 before writing the first real CMakeLists.txt file.", "bestFor": "Targets, source lists, libraries, include paths, and terminal builds.", "usage": ["Read once, then convert an older project immediately.", "Build from the terminal before touching IDE shortcuts."], "anti": "Do not wait until projects become large before learning the build system.", "link": "https://cmake.org/getting-started/"}, {"id": "cmake-tutorial", "title": "CMake Tutorial", "category": "Build Tools", "role": "Step-by-step official guide for serious project structure.", "when": "Use in Weeks 11 and 12, then again in the C++ utility-library project.", "bestFor": "Executables, libraries, subdirectories, configuration, presets, and target-based design.", "usage": ["Follow the early steps while restructuring a real repo.", "Mirror the tutorial with personal code rather than reading passively."], "anti": "Do not read the tutorial without applying it to a live repository.", "link": "https://cmake.org/cmake/help/latest/guide/tutorial/index.html"}, {"id": "gtest-primer", "title": "GoogleTest Primer", "category": "Testing", "role": "First official guide for unit testing in C++.", "when": "Start in Week 12 and use it whenever the C++ projects stop being toy files.", "bestFor": "Assertions, fixtures, edge cases, and testable design.", "usage": ["Write at least three tests for one class or function.", "Cover one normal case, one boundary case, and one failure case."], "anti": "Do not test only happy paths.", "link": "https://google.github.io/googletest/primer.html"}, {"id": "gtest-cmake", "title": "GoogleTest Quickstart with CMake", "category": "Testing", "role": "Practical path for wiring tests into a CMake build.", "when": "Use directly after the Primer in Week 12.", "bestFor": "Creating a repeatable test target from the terminal.", "usage": ["Integrate a tiny test target first.", "Run tests from the command line before considering CI."], "anti": "Do not postpone integration until the repo becomes messy.", "link": "https://google.github.io/googletest/quickstart-cmake.html"}, {"id": "torch-basics", "title": "PyTorch Learn the Basics", "category": "PyTorch Core", "role": "Primary teaching spine for the full beginner workflow in PyTorch.", "when": "Use every week from Week 1 to Week 18.", "bestFor": "Data, models, autograd, optimisation, saving, and a clean beginner-to-practical path.", "usage": ["Follow the sequence in order.", "Rebuild each tutorial as a fresh local script.", "Change one thing in every example and log the outcome."], "anti": "Do not scatter attention across many beginner courses at the same time.", "link": "https://docs.pytorch.org/tutorials/beginner/basics/intro.html"}, {"id": "torch-quickstart", "title": "PyTorch Quickstart", "category": "PyTorch Core", "role": "Compressed overview of the full training workflow.", "when": "Read once in Week 1, then revisit before Project 1.", "bestFor": "Seeing the whole training loop before drilling parts one by one.", "usage": ["Recreate the script from memory by the end of Month 1.", "Use it as a pipeline checkpoint, not as the whole curriculum."], "anti": "Do not mistake the overview for full fluency.", "link": "https://docs.pytorch.org/tutorials/beginner/basics/quickstart_tutorial.html"}, {"id": "torch-tensors", "title": "PyTorch Tensors", "category": "PyTorch Core", "role": "Main source for tensor shape fluency, indexing, joining, reshaping, and device moves.", "when": "Begin in Week 1 and revisit heavily in Weeks 13 to 16.", "bestFor": "Removing hesitation around tensor manipulation.", "usage": ["Create a personal tensor lab with at least fifteen runnable examples.", "Write down every recurring shape mistake in the notebook."], "anti": "Do not leave tensor shape confusion unrecorded.", "link": "https://docs.pytorch.org/tutorials/beginner/basics/tensorqs_tutorial.html"}, {"id": "torch-data", "title": "PyTorch Datasets and DataLoaders", "category": "PyTorch Core", "role": "Official guide to moving data logic out of the training loop.", "when": "Use in Week 9 and revisit in Week 14 and Project 1.", "bestFor": "Custom datasets, batch inspection, and data-pipeline discipline.", "usage": ["Print sample-label pairs and batch shapes every time.", "Keep dataset code separate from training code."], "anti": "Do not trust a DataLoader until shapes and labels are checked.", "link": "https://docs.pytorch.org/tutorials/beginner/basics/data_tutorial.html"}, {"id": "torch-transforms", "title": "PyTorch Transforms", "category": "PyTorch Core", "role": "Official reference for feature and target transformations.", "when": "Use alongside data work in Weeks 9 and 14.", "bestFor": "Image preprocessing, target transformation, and explicit input preparation.", "usage": ["Apply one input transform and one target transform in a small example.", "Inspect the output shape and type after transformation."], "anti": "Do not apply transforms blindly.", "link": "https://docs.pytorch.org/tutorials/beginner/basics/transforms_tutorial.html"}, {"id": "torch-buildmodel", "title": "Build the Neural Network", "category": "PyTorch Core", "role": "Official tutorial for class-based model construction with nn.Module.", "when": "Use in Weeks 6 and 7 and again in Project 1.", "bestFor": "Layer design, model classes, and parameter inspection.", "usage": ["Write the tutorial once exactly.", "Then rebuild the model from memory with renamed layers and printed shapes."], "anti": "Do not hide model definition inside one giant training file.", "link": "https://docs.pytorch.org/tutorials/beginner/basics/buildmodel_tutorial.html"}, {"id": "torch-autograd", "title": "PyTorch Autograd", "category": "PyTorch Core", "role": "Official explanation of automatic differentiation and computation graphs.", "when": "Use in Week 5 and revisit when gradients feel unclear.", "bestFor": "requires_grad, backward passes, and graph intuition.", "usage": ["Run tiny examples with printed gradients.", "Explain one gradient flow in plain English in the notes."], "anti": "Do not rely on black-box backprop without understanding tensors and gradients.", "link": "https://docs.pytorch.org/tutorials/beginner/basics/autogradqs_tutorial.html"}, {"id": "torch-optim", "title": "Optimising Model Parameters", "category": "PyTorch Core", "role": "Official optimiser and training-step tutorial.", "when": "Use in Weeks 6 and 15.", "bestFor": "Loss, zero_grad, backward, step, and loop structure.", "usage": ["Rebuild the train step from memory.", "Test one optimiser change and record what happened."], "anti": "Do not let the optimiser remain magic.", "link": "https://docs.pytorch.org/tutorials/beginner/basics/optimization_tutorial.html"}, {"id": "torch-save", "title": "Save and Load the Model", "category": "PyTorch Core", "role": "Official checkpoint and weight-loading guide.", "when": "Use in Weeks 8, 15, and 16, then keep it active in all projects.", "bestFor": "state_dict, weight loading, checkpoint discipline, and safe reload patterns.", "usage": ["Save the best model from at least one training run.", "Reload it in a separate script before calling the week finished."], "anti": "Do not claim a project is complete until loading has been verified.", "link": "https://docs.pytorch.org/tutorials/beginner/basics/saveloadrun_tutorial.html"}, {"id": "torch-blitz", "title": "PyTorch 60 Minute Blitz", "category": "PyTorch Supplement", "role": "Compact re-entry resource for fast review weeks.", "when": "Use on review weekends or when a concept needs a rapid second pass.", "bestFor": "Fast refresh of tensors, autograd, and modules.", "usage": ["Use it to compress revision, not to replace the main Basics path."], "anti": "Do not swap between Blitz and Learn the Basics every day.", "link": "https://docs.pytorch.org/tutorials/beginner/blitz/index.html"}, {"id": "torch-cpp-front", "title": "Using the PyTorch C++ Frontend", "category": "Bridge Layer", "role": "Official end-to-end tutorial for working with PyTorch from C++.", "when": "Begin in Week 21 after C++ and PyTorch foundations are stable.", "bestFor": "Understanding how model work translates into the C++ frontend.", "usage": ["Read slowly and keep the first build tiny.", "Map the architecture before compiling."], "anti": "Do not start here before CMake and C++ basics are comfortable.", "link": "https://docs.pytorch.org/tutorials/advanced/cpp_frontend.html"}, {"id": "torch-cpp-api", "title": "PyTorch C++ API", "category": "Bridge Layer", "role": "Reference docs for the public C++ API.", "when": "Use in Weeks 21 to 24 when exact classes or namespaces are unclear.", "bestFor": "ATen, autograd, C++ frontend, serialisation, and API details.", "usage": ["Use as a reference after the main bridge tutorial introduces the concepts."], "anti": "Do not treat the API docs as the first teaching source.", "link": "https://docs.pytorch.org/cppdocs/"}, {"id": "torch-custom-ops", "title": "Custom C++ and CUDA Operators", "category": "Bridge Layer", "role": "Official tutorial for authoring custom operators in C++ and CUDA.", "when": "Use in Weeks 23 and 24 if the bridge project follows the extension route.", "bestFor": "Understanding how Python-side workflows connect to compiled extensions.", "usage": ["Keep the first operator tiny and correctness-focused.", "Compare outputs against a pure Python baseline."], "anti": "Do not chase performance before correctness is proved.", "link": "https://docs.pytorch.org/tutorials/advanced/cpp_custom_ops.html"}];
+    const weeks = [{"week": 1, "phase": "Phase 1 · Core Setup and First Fluency", "title": "Environment, syntax, tensors, and zero-friction setup", "cppFocus": "Compiler setup, console programs, variables, arithmetic, and input-output without hesitation.", "cppRead": "Read the LearnCpp introduction first, then begin the early basics sequence on compiling, running, variables, and simple expressions.", "cppDrills": ["hello name program", "temperature converter", "simple calculator", "unit converter"], "torchFocus": "See the whole PyTorch beginner workflow, then practise tensor creation and shape inspection.", "torchRead": "Read PyTorch Learn the Basics, Quickstart, and Tensors in that order.", "torchDrills": ["tensor creation lab", "indexing and slicing", "broadcasting examples", "device checks"], "buildTask": "Create one clean repo with cpp, torch, notes, and screenshots folders.", "ship": "Four tiny C++ files plus one tensor_lab.py script committed with notes.", "resourceIds": ["learncpp-intro", "learncpp-home", "exercism-cpp", "torch-basics", "torch-quickstart", "torch-tensors"]}, {"week": 2, "phase": "Phase 1 · Core Setup and First Fluency", "title": "Control flow and manual reasoning", "cppFocus": "if, else, switch, while, for, booleans, and branching logic.", "cppRead": "Continue LearnCpp into the control-flow and Boolean logic lessons, keeping the pace sequential.", "cppDrills": ["FizzBuzz", "prime checker", "factorial calculator", "menu-driven calculator"], "torchFocus": "Manual forward-pass reasoning using tensors and tiny regression-style calculations.", "torchRead": "Revisit Quickstart structure, then use Tensors again to build tiny forward and loss calculations by hand.", "torchDrills": ["manual forward pass", "mean squared error by hand", "batch dimension checks"], "buildTask": "Refactor one old C++ file so logic is split into clean branches and helper functions.", "ship": "A control-flow drill pack and a small tensor-only regression script.", "resourceIds": ["learncpp-home", "exercism-cpp", "torch-quickstart", "torch-tensors"]}, {"week": 3, "phase": "Phase 1 · Core Setup and First Fluency", "title": "Functions, scope, and basic debugging", "cppFocus": "Functions, parameters, returns, scope, and separating logic from main.", "cppRead": "Progress through LearnCpp function lessons and rewrite the earlier week’s code as reusable helpers.", "cppDrills": ["math utilities", "validation functions", "debug broken code"], "torchFocus": "Build tiny utility functions for losses, accuracy, and metrics instead of leaving everything inline.", "torchRead": "Use the Basics sequence as reference, then rewrite utility logic into standalone helper functions.", "torchDrills": ["accuracy helper", "average meter", "mini evaluation function"], "buildTask": "Create a multi-file folder where at least one helper file is separate from the main entry point.", "ship": "One small utility-led C++ project and one torch_metrics.py helper module.", "resourceIds": ["learncpp-home", "exercism-cpp", "torch-basics"]}, {"week": 4, "phase": "Phase 1 · Core Setup and First Fluency", "title": "Strings, vectors, and data handling basics", "cppFocus": "std::string, std::vector, iteration, search, and simple statistics.", "cppRead": "Continue sequentially through LearnCpp string and array-vector material, then use cppreference only for exact STL details.", "cppDrills": ["reverse string", "vowel counter", "mean and median", "remove duplicates"], "torchFocus": "Handle lists, simple batching, and dimension sanity checks with tensors.", "torchRead": "Use Tensors again and create small scripts focused on shape changes and manual batches.", "torchDrills": ["manual batching", "tensor slicing", "stack and cat examples"], "buildTask": "Write one clean program that reads a list, transforms it, and prints a result summary.", "ship": "A vector-focused drill file and one batching_playground.py script.", "resourceIds": ["learncpp-home", "cppreference", "exercism-cpp", "torch-tensors"]}, {"week": 5, "phase": "Phase 2 · Memory, References, and Object Thinking", "title": "References, pointers, and autograd intuition", "cppFocus": "References, addresses, pointers, pass-by-value, and pass-by-reference.", "cppRead": "Move through LearnCpp reference and pointer lessons slowly, writing comparison notes after each session.", "cppDrills": ["swap with references", "pointer walk-through array", "parameter-passing comparison"], "torchFocus": "Understand autograd, requires_grad, backward, and gradient inspection in very small examples.", "torchRead": "Read the official autograd tutorial and rebuild each example with printed gradients.", "torchDrills": ["requires_grad examples", "single backward pass", "gradient inspection notes"], "buildTask": "Create a comparison file that shows the same function with value, reference, and pointer styles.", "ship": "A pointer-reference drill set and one autograd_notes.py script with comments.", "resourceIds": ["learncpp-home", "exercism-cpp", "torch-autograd"]}, {"week": 6, "phase": "Phase 2 · Memory, References, and Object Thinking", "title": "Dynamic memory, nn.Module, and train-step anatomy", "cppFocus": "Stack versus heap, dynamic allocation, and why modern code prefers safer ownership patterns.", "cppRead": "Study dynamic memory in LearnCpp, then write side notes on what feels unsafe or fragile.", "cppDrills": ["dynamic array build", "replace raw array with vector", "memory ownership notes"], "torchFocus": "Build a tiny neural network class and a minimal train step with loss and optimiser.", "torchRead": "Read Build the Neural Network and Optimising Model Parameters back to back.", "torchDrills": ["two-layer MLP", "one train step", "loss logging"], "buildTask": "Write one MLP training script from memory by the end of the week.", "ship": "A short safety comparison between manual memory and container-based design plus a working mlp_train.py file.", "resourceIds": ["learncpp-home", "torch-buildmodel", "torch-optim"]}, {"week": 7, "phase": "Phase 2 · Memory, References, and Object Thinking", "title": "Structs, classes, and code organisation", "cppFocus": "Structs, classes, constructors, member functions, and simple object design.", "cppRead": "Work through LearnCpp class-introduction material and rewrite a past procedural file into a small class.", "cppDrills": ["DatasetInfo class", "Logger class", "Timer class"], "torchFocus": "Move from notebook-style fragments into a structured training module with helper functions and config values.", "torchRead": "Revisit Build the Neural Network and restructure the training script into functions and modules.", "torchDrills": ["config object", "training helper", "validation helper"], "buildTask": "Create a Timer class in C++ and a training_utils.py file in PyTorch.", "ship": "A multi-class C++ practice repo and a cleaner function-driven PyTorch training layout.", "resourceIds": ["learncpp-home", "cppreference", "torch-buildmodel", "torch-optim"]}, {"week": 8, "phase": "Phase 2 · Memory, References, and Object Thinking", "title": "Headers, source files, operator basics, and checkpoint discipline", "cppFocus": "Separating headers and source files, basic const correctness, and safe operator overloading.", "cppRead": "Continue LearnCpp into code organisation and overload introductions.", "cppDrills": ["Vector2D class", "MatrixShape helper", "header-source split"], "torchFocus": "Checkpoint naming, state_dict handling, and clean run folders.", "torchRead": "Read Save and Load the Model and apply it to the MLP work from Weeks 6 and 7.", "torchDrills": ["best-model save", "load in separate script", "run folder naming"], "buildTask": "Organise the C++ code into include and src folders and create a model-checkpoint folder layout.", "ship": "A first small multi-file C++ project plus a PyTorch run folder that saves and reloads correctly.", "resourceIds": ["learncpp-home", "torch-save"]}, {"week": 9, "phase": "Phase 3 · Standard Library, Build Systems, and Tests", "title": "STL fluency and custom datasets", "cppFocus": "vector, map, unordered_map, set, sort, find, and accumulation patterns.", "cppRead": "Use LearnCpp for the main STL reading and cppreference to clarify exact container behaviour when necessary.", "cppDrills": ["word counter", "frequency map", "top-k values", "vector transforms"], "torchFocus": "Separate data loading from training logic using custom Dataset and DataLoader patterns.", "torchRead": "Read Datasets and DataLoaders, then read Transforms and inspect outputs carefully.", "torchDrills": ["CSV dataset", "custom DataLoader", "batch-shape debugger"], "buildTask": "Create one dataset module that can be imported cleanly from a training script.", "ship": "An STL exercise collection and one custom dataset module that prints sample shapes and labels.", "resourceIds": ["learncpp-home", "cppreference", "torch-data", "torch-transforms"]}, {"week": 10, "phase": "Phase 3 · Standard Library, Build Systems, and Tests", "title": "Ownership, smart pointers, and repeatable training loops", "cppFocus": "unique_ptr, shared_ptr, ownership, and practical move semantics.", "cppRead": "Move through LearnCpp smart pointer content and explain owners in comments and notes.", "cppDrills": ["replace raw ownership with unique_ptr", "ownership audit", "shared_ptr necessity check"], "torchFocus": "Rebuild a full training loop from memory with validation, logging, and early stopping.", "torchRead": "Revisit Quickstart, Optimisation, and Save and Load while writing the loop fresh.", "torchDrills": ["validation loop", "early stopping", "history tracking"], "buildTask": "Explain every important object owner in one C++ file and every major step in one training loop.", "ship": "A short ownership guide and a memory-written PyTorch training loop with validation.", "resourceIds": ["learncpp-home", "cppreference", "torch-quickstart", "torch-optim", "torch-save"]}, {"week": 11, "phase": "Phase 3 · Standard Library, Build Systems, and Tests", "title": "CMake and script-to-project transition", "cppFocus": "Targets, libraries, include paths, build folders, and terminal builds.", "cppRead": "Read CMake Getting Started first, then follow the first steps of the official CMake tutorial with a live repo.", "cppDrills": ["convert older repo to CMake", "split src and include", "build from terminal"], "torchFocus": "Turn one notebook or loose script collection into a small script-based project layout.", "torchRead": "Use the PyTorch Basics stack as the logic source while creating train.py and evaluate.py scripts.", "torchDrills": ["train.py", "evaluate.py", "simple config file"], "buildTask": "Stop relying on notebook cells as the main structure for real work.", "ship": "One CMake-managed C++ project and one script-based PyTorch mini-project.", "resourceIds": ["cmake-start", "cmake-tutorial", "torch-basics"]}, {"week": 12, "phase": "Phase 3 · Standard Library, Build Systems, and Tests", "title": "Testing and project hygiene", "cppFocus": "Unit tests, assertions, fixtures, and edge-case design.", "cppRead": "Read the GoogleTest Primer first, then wire it into the project using the CMake quickstart.", "cppDrills": ["test utility functions", "test edge cases", "regression test for past bug"], "torchFocus": "Write validation checks for shapes, dataset assumptions, and metric utilities.", "torchRead": "Use the earlier PyTorch modules and build tiny tests or sanity scripts around them.", "torchDrills": ["shape check test", "dataset sanity script", "metric consistency check"], "buildTask": "Treat tests as part of the build, not as optional extras.", "ship": "A C++ repo with terminal-runnable tests and a small torch_checks folder.", "resourceIds": ["gtest-primer", "gtest-cmake", "cmake-tutorial"]}, {"week": 13, "phase": "Phase 4 · Deep PyTorch Fluency and Reproducibility", "title": "Tensor transformation fluency week", "cppFocus": "Keep C++ alive with one short review drill each day rather than pushing new theory hard.", "cppRead": "Use older notes, one Exercism problem, and one STL refresh during the week.", "cppDrills": ["one review drill per day", "one STL rewrite", "one small bug hunt"], "torchFocus": "Masking, reshaping, reductions, stacking, concatenation, and dimension reasoning until it feels automatic.", "torchRead": "Work heavily with the Tensors tutorial and use the 60 Minute Blitz only as a quick review support.", "torchDrills": ["masking lab", "reshape lab", "reduction lab", "stack-cat lab"], "buildTask": "Create a single tensor playbook file with many tiny examples rather than one large abstract note.", "ship": "A tensor playbook script with at least twenty clear examples and printed shape explanations.", "resourceIds": ["torch-tensors", "torch-blitz", "exercism-cpp"]}, {"week": 14, "phase": "Phase 4 · Deep PyTorch Fluency and Reproducibility", "title": "Three dataset patterns in one repository", "cppFocus": "Maintenance only, with light class and test reviews.", "cppRead": "Review one old class and one test file only; keep C++ warm but not dominant.", "cppDrills": ["one light refactor", "one test improvement"], "torchFocus": "Build tabular, image, and text dataset patterns with explicit transforms and batch checks.", "torchRead": "Use Datasets and DataLoaders plus Transforms as the core study path for the week.", "torchDrills": ["tabular dataset", "image dataset", "text dataset"], "buildTask": "Put all three dataset styles into one organised repo with shared conventions.", "ship": "A dataset_patterns repository with three working loaders and visible batch-shape inspection.", "resourceIds": ["torch-data", "torch-transforms", "torch-basics"]}, {"week": 15, "phase": "Phase 4 · Deep PyTorch Fluency and Reproducibility", "title": "Training loop mastery and run control", "cppFocus": "Keep one short C++ drill and one refactor alive so the language does not cool down.", "cppRead": "Use maintenance only, not heavy new reading.", "cppDrills": ["one small exercise", "one file cleanup"], "torchFocus": "Write the same training logic three times until it can be produced from memory.", "torchRead": "Revisit Quickstart, Optimisation, and Save and Load in a deliberate loop-building sequence.", "torchDrills": ["baseline loop", "validation loop", "checkpoint-resume loop"], "buildTask": "Run the same experiment twice and compare reproducibility basics and file outputs.", "ship": "A training package that can train, validate, save, resume, and log cleanly.", "resourceIds": ["torch-quickstart", "torch-optim", "torch-save"]}, {"week": 16, "phase": "Phase 4 · Deep PyTorch Fluency and Reproducibility", "title": "Reproducibility, saving discipline, and clean runs", "cppFocus": "Review CMake, tests, and smart pointers through old repos.", "cppRead": "Read notes and touch one old build pipeline so C++ project hygiene stays active.", "cppDrills": ["one build check", "one regression test", "one cleanup pass"], "torchFocus": "Finalise run folders, best-model saving, config storage, and result export habits.", "torchRead": "Use Save and Load plus the Basics workflow pages as a final reproducibility pass.", "torchDrills": ["config save", "metric export", "best-weight reload", "demo inference"], "buildTask": "Create a standard run directory structure that every later project will follow.", "ship": "A reproducible experiment template with recoverable runs and clean artefacts.", "resourceIds": ["torch-save", "torch-basics", "cmake-tutorial"]}, {"week": 17, "phase": "Phase 5 · Portfolio Build 1 and Portfolio Build 2", "title": "Project 1 scaffold, PyTorch training toolkit", "cppFocus": "Only maintenance drills while the project framework takes over.", "cppRead": "Keep one light drill and one short review note during the week.", "cppDrills": ["one small drill per day"], "torchFocus": "Plan and scaffold a reusable training toolkit with clear project structure.", "torchRead": "Use the Basics stack as the logic base and treat past scripts as raw material to be cleaned up.", "torchDrills": ["repo layout", "config file", "entry point design", "README sketch"], "buildTask": "Design before coding. Keep the first repository architecture simple and defensible.", "ship": "A clean repository skeleton with src, configs, models, data, tests, and README.", "resourceIds": ["torch-basics", "torch-data", "torch-save"]}, {"week": 18, "phase": "Phase 5 · Portfolio Build 1 and Portfolio Build 2", "title": "Project 1 implementation, toolkit completion", "cppFocus": "Maintenance only. Preserve the habit without stealing time from the main build.", "cppRead": "No major new reading.", "cppDrills": ["one review drill", "one ownership review"], "torchFocus": "Complete dataset handling, validation, plotting, checkpointing, and error analysis.", "torchRead": "Pull together Datasets, Build Model, Optimisation, and Save and Load into one coherent toolkit.", "torchDrills": ["dataset integration", "validation module", "plot generation", "error analysis"], "buildTask": "Test the whole repository from a clean environment before calling it done.", "ship": "A functioning PyTorch toolkit repo that another person can run end to end.", "resourceIds": ["torch-data", "torch-buildmodel", "torch-optim", "torch-save"]}, {"week": 19, "phase": "Phase 5 · Portfolio Build 1 and Portfolio Build 2", "title": "Project 2 scaffold, C++ utility library", "cppFocus": "Design a serious multi-file utility library for AI work with clear interfaces.", "cppRead": "Use LearnCpp, CMake Tutorial, and cppreference as needed while planning the library surface.", "cppDrills": ["CSV reader plan", "timer design", "logger design", "config reader plan"], "torchFocus": "Light maintenance drills only so PyTorch fluency stays warm.", "torchRead": "A short review of one old data or loop module is enough.", "torchDrills": ["one maintenance script"], "buildTask": "Keep interfaces small, testable, and free from unnecessary cleverness.", "ship": "A multi-file C++ repo scaffold with src, include, tests, and docs folders in place.", "resourceIds": ["learncpp-home", "cppreference", "cmake-tutorial", "gtest-primer"]}, {"week": 20, "phase": "Phase 5 · Portfolio Build 1 and Portfolio Build 2", "title": "Project 2 implementation, tests, and polish", "cppFocus": "Complete the C++ utility library and prove that it builds cleanly from scratch.", "cppRead": "Use cppreference for exact APIs and the GoogleTest docs for edge-case thinking.", "cppDrills": ["CSV parser", "timer", "logger", "config parser", "full test pass"], "torchFocus": "Minimal maintenance only, mostly short review scripts.", "torchRead": "Short refresh only.", "torchDrills": ["metric utility check"], "buildTask": "Document build steps clearly enough that another person could reproduce them quickly.", "ship": "A serious C++ repo with CMake, unit tests, and a clean README.", "resourceIds": ["cppreference", "cmake-tutorial", "gtest-primer", "gtest-cmake"]}, {"week": 21, "phase": "Phase 6 · Bridge into AI Engineering", "title": "Bridge architecture and C++ frontend orientation", "cppFocus": "Understand what changes when PyTorch work crosses into C++ territory.", "cppRead": "Read the PyTorch C++ Frontend tutorial first, then inspect the C++ API docs only for exact symbols and namespaces.", "cppDrills": ["architecture note", "tooling setup", "input-output contract sketch"], "torchFocus": "Clarify model and inference assumptions from the Python side before bridging.", "torchRead": "Review export, inference, and input shape expectations from the existing Python code.", "torchDrills": ["inference script", "input contract check", "output comparison plan"], "buildTask": "Decide early whether the bridge project will be a tiny inference app or a custom operator path.", "ship": "A one-page bridge design note and a repository scaffold for the final project.", "resourceIds": ["torch-cpp-front", "torch-cpp-api"]}, {"week": 22, "phase": "Phase 6 · Bridge into AI Engineering", "title": "Bridge option A, tiny C++ inference application", "cppFocus": "Build a minimal C++ app that loads data, calls the model path, and prints predictions or outputs clearly.", "cppRead": "Continue with the C++ Frontend material and use the API docs only when the implementation needs exact details.", "cppDrills": ["minimal app setup", "input pipeline", "output handling"], "torchFocus": "Check inference parity between the Python and C++ sides.", "torchRead": "Review the Python inference script and compare shapes, preprocessing, and outputs carefully.", "torchDrills": ["parity check", "sample comparison"], "buildTask": "Keep the scope tiny enough to finish properly rather than aiming for flashy complexity.", "ship": "A minimal but working C++ inference prototype with clear build instructions.", "resourceIds": ["torch-cpp-front", "torch-cpp-api", "cmake-tutorial"]}, {"week": 23, "phase": "Phase 6 · Bridge into AI Engineering", "title": "Bridge option B, custom operator path", "cppFocus": "Build one small custom operator and integrate it into a PyTorch workflow with correctness checks.", "cppRead": "Use the Custom C++ and CUDA Operators tutorial as the main teaching path for the week.", "cppDrills": ["operator scaffold", "registration", "correctness test"], "torchFocus": "Use Python as the test harness for verifying the extension behaviour against a baseline.", "torchRead": "Keep the Python side focused on correctness comparison and integration.", "torchDrills": ["baseline comparison", "operator call test"], "buildTask": "Correctness first. Performance language comes later, after the outputs are trusted.", "ship": "A small custom-operator repo or a robust prototype that clearly shows the Python-C++ seam.", "resourceIds": ["torch-custom-ops", "torch-cpp-api"]}, {"week": 24, "phase": "Phase 6 · Bridge into AI Engineering", "title": "Final polish, portfolio packaging, and evidence cleanup", "cppFocus": "Polish build files, final refactors, and README clarity.", "cppRead": "Read only what is needed to close remaining gaps. The priority is quality, not new theory.", "cppDrills": ["final refactor", "final build from scratch", "final test run"], "torchFocus": "Prepare demo scripts, screenshots, technical notes, and result summaries.", "torchRead": "Review only the resources that directly strengthen the final README or usage example.", "torchDrills": ["demo script", "result snapshot", "usage validation"], "buildTask": "Every main project should be clonable and runnable with clear instructions.", "ship": "A portfolio-ready bridge project and a clean archive of the full 24-week journey.", "resourceIds": ["torch-cpp-front", "torch-custom-ops", "torch-cpp-api", "cmake-tutorial", "gtest-primer"]}];
+    const projects = [{"title": "Project 1 · PyTorch Training Toolkit", "summary": "A reusable training repository that proves strong Python-side engineering discipline rather than notebook-only experimentation.", "deliverables": ["src, configs, models, data, scripts, tests, and README folders", "custom dataset or loader logic", "validation loop, checkpointing, and metrics logging", "plotting or error-analysis output", "one clean example command that another person can run"], "proof": "The repository should run from a clean environment and produce a visible training artefact, metrics file, and saved weights."}, {"title": "Project 2 · C++ Utility Library for AI Work", "summary": "A small but serious C++ library showing build discipline, testing, ownership clarity, and reusable tooling habits.", "deliverables": ["CSV reader or parser", "timer and logger utilities", "basic config reader", "unit tests wired through CMake", "clear build and test instructions"], "proof": "A fresh clone should build cleanly, run tests from the terminal, and expose simple reusable components."}, {"title": "Project 3 · Python to C++ Bridge Project", "summary": "The portfolio piece that demonstrates where model work meets systems-style implementation.", "deliverables": ["option A, tiny C++ inference application or option B, small custom operator", "correctness comparison against a Python baseline", "design note explaining the boundary between Python and C++", "final README with exact build and run steps"], "proof": "The project should make the Python-C++ seam visible and technically understandable, not merely present code."}];
+    const dayModes = [{"label": "Monday · Learn and start building", "minutes": "110 to 150 minutes", "goal": "New concept intake plus the first working version.", "read": "Read the week’s main C++ and PyTorch resources in short focused blocks. Stop reading as soon as the first implementation can start.", "build": "Write the first runnable version immediately, even if it is rough.", "ship": "One fresh file must run before the session ends."}, {"label": "Tuesday · Rebuild from memory", "minutes": "100 to 140 minutes", "goal": "Force recall so the learner sees what is actually understood.", "read": "Use notes only after the first recall attempt fails.", "build": "Recreate one C++ file and one PyTorch file without copying.", "ship": "A memory-built version with comments on what was forgotten."}, {"label": "Wednesday · Hard drill and debugging", "minutes": "100 to 150 minutes", "goal": "Take the week’s hardest drill and explain every breakage clearly.", "read": "Read only enough to unblock the next mistake.", "build": "Push through one difficult drill and log the bug-fix chain.", "ship": "One solved hard drill plus one debugging note."}, {"label": "Thursday · Mini build day", "minutes": "110 to 160 minutes", "goal": "Combine the week’s pieces into something slightly larger and cleaner.", "read": "Use the build-system or project-structure resource if the week needs it.", "build": "Turn loose exercises into one mini project or module.", "ship": "A working mini build with a sensible folder layout."}, {"label": "Friday · Refactor and verify", "minutes": "90 to 140 minutes", "goal": "Improve names, structure, tests, and reliability.", "read": "Read the reference docs only for exact fixes or API details.", "build": "Refactor aggressively and add checks, tests, or assertions.", "ship": "Cleaner code plus visible verification, tests, reload, or sanity checks."}, {"label": "Saturday · Package and push", "minutes": "75 to 120 minutes", "goal": "Turn the week into something that can be shown later.", "read": "Review notes and README drafts only.", "build": "Organise files, write summary notes, and push to GitHub.", "ship": "A clean commit, a short technical summary, and a clear next-week setup."}, {"label": "Sunday · Light review or rest", "minutes": "20 to 45 minutes", "goal": "Protect consistency without adding cognitive overload.", "read": "Read notes, skim one old file, or rest completely.", "build": "No heavy building. Only micro-review if energy is low.", "ship": "At most a note update or one tiny review drill."}];
+    const resourceMap = Object.fromEntries(resources.map(item => [item.id, item]));
+
+    const storageKeys = { startDate: 'aiRoadmapStartDate_v2', notes: 'aiRoadmapNotes_v2', checks: 'aiRoadmapChecks_v2' };
+
+    const startDateInput = document.getElementById('startDate');
+    const startDateStatus = document.getElementById('startDateStatus');
+    const weekStatus = document.getElementById('weekStatus');
+    const dayStatus = document.getElementById('dayStatus');
+    const todayHeadline = document.getElementById('todayHeadline');
+    const overallPct = document.getElementById('overallPct');
+    const overallBar = document.getElementById('overallBar');
+    const notesBox = document.getElementById('notesBox');
+    const flashMessage = document.getElementById('flashMessage');
+
+    function flash(text) {
+      flashMessage.textContent = text;
+      setTimeout(() => { if (flashMessage.textContent === text) flashMessage.textContent = ''; }, 2200);
+    }
+
+    function daysBetween(start, end) {
+      const startDate = new Date(start + 'T00:00:00');
+      const endDate = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+      return Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24));
+    }
+
+    function getPosition() {
+      const stored = localStorage.getItem(storageKeys.startDate);
+      if (!stored) return null;
+      const delta = daysBetween(stored, new Date());
+      if (Number.isNaN(delta)) return null;
+      if (delta < 0) return { status: 'future', delta };
+      return { status: 'active', delta, weekIndex: Math.floor(delta / 7), dayIndex: delta % 7 };
+    }
+
+    function loadStartDate() {
+      const stored = localStorage.getItem(storageKeys.startDate);
+      if (stored) startDateInput.value = stored;
+    }
+
+    function saveStartDate() {
+      if (!startDateInput.value) return;
+      localStorage.setItem(storageKeys.startDate, startDateInput.value);
+      updateToday();
+      flash('Start date saved');
+    }
+
+    function loadNotes() { notesBox.value = localStorage.getItem(storageKeys.notes) || ''; }
+    function saveNotes() { localStorage.setItem(storageKeys.notes, notesBox.value); }
+
+    function getChecks() {
+      try { return JSON.parse(localStorage.getItem(storageKeys.checks) || '{}'); } catch { return {}; }
+    }
+
+    function saveChecks(data) { localStorage.setItem(storageKeys.checks, JSON.stringify(data)); }
+
+    function seedFilters() {
+      const phaseFilter = document.getElementById('phaseFilter');
+      [...new Set(weeks.map(item => item.phase))].forEach(phase => {
+        const option = document.createElement('option');
+        option.value = phase; option.textContent = phase; phaseFilter.appendChild(option);
+      });
+      const resourceFilter = document.getElementById('resourceFilter');
+      [...new Set(resources.map(item => item.category))].forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat; option.textContent = cat; resourceFilter.appendChild(option);
+      });
+    }
+
+    function renderRoutine() {
+      const grid = document.getElementById('routineGrid');
+      grid.innerHTML = dayModes.map(mode => `
+        <div class="panel">
+          <div class="summary-row">
+            <h4>${mode.label}</h4>
+            <span class="tag gold">${mode.minutes}</span>
+          </div>
+          <p><strong>Purpose</strong><br>${mode.goal}</p>
+          <p><strong>Reading Rule</strong><br>${mode.read}</p>
+          <p><strong>Build Rule</strong><br>${mode.build}</p>
+          <p><strong>Expected Output</strong><br>${mode.ship}</p>
+        </div>
+      `).join('');
+    }
+
+    function renderProjects() {
+      const grid = document.getElementById('projectGrid');
+      grid.innerHTML = projects.map(project => `
+        <details class="item card" open>
+          <summary>
+            <div class="summary-row"><h4>${project.title}</h4><span class="badge">Portfolio</span></div>
+            <p>${project.summary}</p>
+          </summary>
+          <div class="details-body">
+            <ul>${project.deliverables.map(item => `<li>${item}</li>`).join('')}</ul>
+            <p style="margin-top:12px;"><strong>Proof of quality</strong><br>${project.proof}</p>
+          </div>
+        </details>
+      `).join('');
+    }
+
+    function renderResources() {
+      const query = document.getElementById('resourceSearch').value.trim().toLowerCase();
+      const filter = document.getElementById('resourceFilter').value;
+      const items = resources.filter(item => {
+        const matchesQuery = !query || JSON.stringify(item).toLowerCase().includes(query);
+        const matchesFilter = filter === 'all' || item.category === filter;
+        return matchesQuery && matchesFilter;
+      });
+      document.getElementById('resourceGrid').innerHTML = items.map(item => `
+        <details class="item card" open>
+          <summary>
+            <div class="summary-row">
+              <div>
+                <h4>${item.title}</h4>
+                <div class="summary-meta"><span class="tag">${item.category}</span></div>
+              </div>
+              <a class="btn ghost" href="${item.link}" target="_blank" rel="noreferrer">Open</a>
+            </div>
+            <p>${item.role}</p>
+          </summary>
+          <div class="details-body">
+            <p><strong>When to Use It</strong><br>${item.when}</p>
+            <p><strong>Best For</strong><br>${item.bestFor}</p>
+            <p><strong>Use It This Way</strong></p>
+            <ul>${item.usage.map(rule => `<li>${rule}</li>`).join('')}</ul>
+            <p><strong>Watch Out For</strong><br>${item.anti}</p>
+          </div>
+        </details>
+      `).join('');
+    }
+
+    function renderWeeks() {
+      const query = document.getElementById('searchWeeks').value.trim().toLowerCase();
+      const filter = document.getElementById('phaseFilter').value;
+      const grid = document.getElementById('weekGrid');
+      grid.innerHTML = '';
+      [...new Set(weeks.map(item => item.phase))].forEach(phase => {
+        const group = weeks.filter(item => {
+          const matchesPhase = filter === 'all' || item.phase === filter;
+          const matchesQuery = !query || JSON.stringify(item).toLowerCase().includes(query);
+          return item.phase === phase && matchesPhase && matchesQuery;
+        });
+        if (!group.length) return;
+        const block = document.createElement('div');
+        block.className = 'phase-block';
+        block.innerHTML = `<div class="phase-title"><h4>${phase}</h4><span class="pill">${group.length} week${group.length > 1 ? 's' : ''}</span></div>`;
+        group.forEach(week => {
+          const resourceNames = week.resourceIds.map(id => resourceMap[id]?.title || id);
+          const details = document.createElement('details');
+          details.className = 'item card';
+          details.dataset.week = week.week;
+          details.innerHTML = `
+            <summary>
+              <div class="summary-row">
+                <div>
+                  <h4>Week ${week.week} · ${week.title}</h4>
+                  <p>${week.ship}</p>
+                </div>
+                <span class="badge">Ship target</span>
+              </div>
+              <div class="summary-meta">
+                <span class="tag">C++ focus</span>
+                <span class="tag">PyTorch focus</span>
+                <span class="tag">Build rule</span>
+              </div>
+            </summary>
+            <div class="details-body">
+              <div class="grid-2">
+                <div class="panel">
+                  <h4>C++ focus</h4>
+                  <p>${week.cppFocus}</p>
+                  <p><strong>Read</strong><br>${week.cppRead}</p>
+                  <ul>${week.cppDrills.map(item => `<li>${item}</li>`).join('')}</ul>
+                </div>
+                <div class="panel">
+                  <h4>PyTorch focus</h4>
+                  <p>${week.torchFocus}</p>
+                  <p><strong>Read</strong><br>${week.torchRead}</p>
+                  <ul>${week.torchDrills.map(item => `<li>${item}</li>`).join('')}</ul>
+                </div>
+              </div>
+              <div class="grid-2" style="margin-top:16px;">
+                <div class="panel">
+                  <h4>Build target</h4>
+                  <p>${week.buildTask}</p>
+                  <p><strong>Week must end with</strong><br>${week.ship}</p>
+                </div>
+                <div class="panel">
+                  <h4>Resource stack</h4>
+                  <ul>${resourceNames.map(name => `<li>${name}</li>`).join('')}</ul>
+                </div>
+              </div>
+            </div>
+          `;
+          block.appendChild(details);
+        });
+        grid.appendChild(block);
+      });
+    }
+
+    function checklistItems(week, mode) {
+      return [
+        { title: 'Read only the required material', desc: mode.read },
+        { title: 'Build the week-specific C++ and PyTorch work', desc: `C++ target: ${week.cppFocus} PyTorch target: ${week.torchFocus}` },
+        { title: 'Apply the day mode build rule', desc: mode.build },
+        { title: 'Finish with a visible artefact', desc: mode.ship }
+      ];
+    }
+
+    function setChecklist(container, items, weekNo, dayIndex) {
+      container.innerHTML = '';
+      const checks = getChecks();
+      items.forEach((item, idx) => {
+        const key = `w${weekNo}-d${dayIndex}-i${idx}`;
+        const checked = Boolean(checks[key]);
+        const row = document.createElement('label');
+        row.className = 'check-item';
+        row.innerHTML = `
+          <input type="checkbox" ${checked ? 'checked' : ''} data-key="${key}">
+          <span><strong>${item.title}</strong><span class="muted">${item.desc}</span></span>
+        `;
+        row.querySelector('input').addEventListener('change', e => {
+          const all = getChecks();
+          all[key] = e.target.checked;
+          saveChecks(all);
+          updateProgress();
+        });
+        container.appendChild(row);
+      });
+    }
+
+    function updateProgress() {
+      const checks = getChecks();
+      const completed = Object.values(checks).filter(Boolean).length;
+      const total = weeks.length * dayModes.length * 4;
+      const pct = Math.max(0, Math.min(100, Math.round((completed / total) * 100)));
+      overallPct.textContent = `${pct}%`;
+      overallBar.style.width = `${pct}%`;
+    }
+
+    function listItems(targetId, items) {
+      const el = document.getElementById(targetId);
+      el.innerHTML = items.map(item => `<li>${item}</li>`).join('');
+    }
+
+    function buildTodayText(week, mode, dayIndex) {
+      const cppTasks = [
+        `Read this week’s C++ path. ${week.cppRead}`,
+        `Solve at least one drill from this set. ${week.cppDrills.slice(0, 2).join(', ')}`,
+        `Keep the day-mode rule in force. ${mode.build}`
+      ];
+      const torchTasks = [
+        `Read this week’s PyTorch path. ${week.torchRead}`,
+        `Implement at least one active drill. ${week.torchDrills.slice(0, 2).join(', ')}`,
+        `End by checking shapes, outputs, or checkpoints rather than trusting the script blindly.`
+      ];
+      const buildTasks = [
+        week.buildTask,
+        `Week shipping rule. ${week.ship}`,
+        `Today output rule. ${mode.ship}`
+      ];
+      if (dayIndex === 1) {
+        cppTasks[1] = `Rebuild one earlier C++ file from memory, ideally from ${week.cppDrills[0]}.`;
+        torchTasks[1] = `Rebuild one earlier PyTorch file from memory, ideally around ${week.torchDrills[0]}.`;
+      }
+      if (dayIndex === 2) {
+        cppTasks[2] = 'Pick the hardest bug today and explain the entire failure chain in plain English.';
+        torchTasks[2] = 'Print intermediate tensor shapes and values during the hardest drill.';
+      }
+      if (dayIndex === 3) {
+        buildTasks[0] = `Mini build day. ${week.buildTask}`;
+      }
+      if (dayIndex === 4) {
+        buildTasks[1] = 'Refactor names, split logic, and add one verification check before ending.';
+      }
+      if (dayIndex === 5) {
+        buildTasks[2] = 'Package the week, update the README, and push visible progress.';
+      }
+      if (dayIndex === 6) {
+        cppTasks.splice(1,1,'No heavy new content. Review one older C++ file only.');
+        torchTasks.splice(1,1,'No heavy new content. Review one older PyTorch file only.');
+        buildTasks[0] = 'Protect consistency and recover energy. The point is continuity, not load.';
+      }
+      return { cppTasks, torchTasks, buildTasks };
+    }
+
+    function updateToday() {
+      const stored = localStorage.getItem(storageKeys.startDate);
+      const weekTitle = document.getElementById('todayWeekTitle');
+      const weekSummary = document.getElementById('todayWeekSummary');
+      const weekTags = document.getElementById('todayWeekTags');
+      const resourceLinks = document.getElementById('todayResourceLinks');
+      const modeTitle = document.getElementById('todayModeTitle');
+      const modeGoal = document.getElementById('todayModeGoal');
+      const modeRules = document.getElementById('todayModeRules');
+      const cppFocus = document.getElementById('todayCppFocus');
+      const torchFocus = document.getElementById('todayTorchFocus');
+      const buildFocus = document.getElementById('todayBuildFocus');
+      const checklist = document.getElementById('todayChecklist');
+
+      listItems('todayCppTasks', []); listItems('todayTorchTasks', []); listItems('todayBuildTasks', []);
+      weekTags.innerHTML = ''; resourceLinks.innerHTML = ''; modeRules.innerHTML = ''; checklist.innerHTML = '';
+
+      if (!stored) {
+        startDateStatus.textContent = 'Start date not set';
+        weekStatus.textContent = 'Week not started';
+        dayStatus.textContent = 'Day not started';
+        todayHeadline.textContent = 'Waiting for a start date';
+        weekTitle.textContent = 'No active week yet';
+        weekSummary.textContent = 'Save a start date to turn the roadmap into a day-by-day plan.';
+        modeTitle.textContent = 'No active day mode yet';
+        modeGoal.textContent = 'The current mode will appear here once the study clock starts.';
+        cppFocus.textContent = 'The C++ mission will appear here.';
+        torchFocus.textContent = 'The PyTorch mission will appear here.';
+        buildFocus.textContent = 'The build and shipping rule will appear here.';
+        updateProgress();
+        return;
+      }
+
+      startDateStatus.textContent = `Start date · ${stored}`;
+      const pos = getPosition();
+      if (!pos || pos.status === 'future') {
+        weekStatus.textContent = 'Roadmap has not started yet';
+        dayStatus.textContent = 'Waiting for day 1';
+        todayHeadline.textContent = 'Start date is in the future';
+        weekTitle.textContent = 'The roadmap has not started yet';
+        weekSummary.textContent = 'The command centre will activate on the saved start date.';
+        modeTitle.textContent = 'Waiting for the first study day';
+        modeGoal.textContent = 'Nothing needs to be done today unless the learner wants a warm-up session.';
+        cppFocus.textContent = 'Optional warm-up only.';
+        torchFocus.textContent = 'Optional warm-up only.';
+        buildFocus.textContent = 'No build rule yet.';
+        updateProgress();
+        return;
+      }
+
+      const week = weeks[Math.min(pos.weekIndex, weeks.length - 1)];
+      const mode = dayModes[pos.dayIndex];
+      weekStatus.textContent = `Week ${week.week} of ${weeks.length}`;
+      dayStatus.textContent = mode.label;
+      todayHeadline.textContent = `Week ${week.week} · ${mode.label}`;
+      weekTitle.textContent = `Week ${week.week} · ${week.title}`;
+      weekSummary.textContent = week.ship;
+      weekTags.innerHTML = `
+        <span class="tag">${week.phase}</span>
+        <span class="tag gold">${week.cppDrills.length} C++ drills</span>
+        <span class="tag gold">${week.torchDrills.length} PyTorch drills</span>
+      `;
+      resourceLinks.innerHTML = week.resourceIds.map(id => {
+        const item = resourceMap[id];
+        return item ? `<a class="btn ghost" href="${item.link}" target="_blank" rel="noreferrer">${item.title}</a>` : '';
+      }).join('');
+
+      modeTitle.textContent = mode.label;
+      modeGoal.textContent = mode.goal;
+      modeRules.innerHTML = `
+        <li><strong>Reading rule</strong> ${mode.read}</li>
+        <li><strong>Build rule</strong> ${mode.build}</li>
+        <li><strong>Output rule</strong> ${mode.ship}</li>
+      `;
+
+      cppFocus.textContent = week.cppFocus;
+      torchFocus.textContent = week.torchFocus;
+      buildFocus.textContent = week.buildTask;
+      const todayText = buildTodayText(week, mode, pos.dayIndex);
+      listItems('todayCppTasks', todayText.cppTasks);
+      listItems('todayTorchTasks', todayText.torchTasks);
+      listItems('todayBuildTasks', todayText.buildTasks);
+      setChecklist(checklist, checklistItems(week, mode), week.week, pos.dayIndex);
+      updateProgress();
+    }
+
+    function copyTodayBrief() {
+      const blocks = [
+        document.getElementById('todayHeadline').textContent,
+        document.getElementById('todayWeekTitle').textContent,
+        document.getElementById('todayWeekSummary').textContent,
+        document.getElementById('todayModeTitle').textContent,
+        document.getElementById('todayCppFocus').textContent,
+        document.getElementById('todayTorchFocus').textContent,
+        document.getElementById('todayBuildFocus').textContent
+      ].join('\n');
+      navigator.clipboard.writeText(blocks).then(() => flash('Today brief copied'));
+    }
+
+    function expandAll(open) {
+      document.querySelectorAll('details.item').forEach(el => el.open = open);
+    }
+
+    function setActiveNav() {
+      const links = [...document.querySelectorAll('.nav a')];
+      const sections = links.map(link => document.querySelector(link.getAttribute('href'))).filter(Boolean);
+      const y = window.scrollY + 120;
+      let active = 0;
+      sections.forEach((section, idx) => { if (section.offsetTop <= y) active = idx; });
+      links.forEach((link, idx) => link.classList.toggle('active', idx === active));
+    }
+
+    document.getElementById('saveStartDate').addEventListener('click', saveStartDate);
+    document.getElementById('jumpTodayBtn').addEventListener('click', () => document.getElementById('today').scrollIntoView({ behaviour: 'smooth' }));
+    document.getElementById('copyTodayBtn').addEventListener('click', copyTodayBrief);
+    document.getElementById('resetProgressBtn').addEventListener('click', () => {
+      localStorage.removeItem(storageKeys.checks); updateProgress(); updateToday(); flash('Progress reset');
+    });
+    document.getElementById('searchWeeks').addEventListener('input', renderWeeks);
+    document.getElementById('phaseFilter').addEventListener('change', renderWeeks);
+    document.getElementById('resourceSearch').addEventListener('input', renderResources);
+    document.getElementById('resourceFilter').addEventListener('change', renderResources);
+    document.getElementById('expandWeeks').addEventListener('click', () => expandAll(true));
+    document.getElementById('collapseWeeks').addEventListener('click', () => expandAll(false));
+    notesBox.addEventListener('input', saveNotes);
+    window.addEventListener('scroll', setActiveNav);
+
+    seedFilters();
+    loadStartDate();
+    loadNotes();
+    renderRoutine();
+    renderProjects();
+    renderResources();
+    renderWeeks();
+    updateToday();
+    setActiveNav();
+  </script>
+
+</body></html>

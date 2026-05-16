@@ -6,3 +6,5 @@
 For broadcasting 2 rules needs to be remembered. 2 arrays are broadcastable if and only if they follow the following rules
     * **Both of the dimention is equal**
     * **One of them is 1**
+
+I have added an example of that is [array_broadcast.py](./array_boradcast.py)
